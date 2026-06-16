@@ -1,0 +1,6 @@
+{
+  "name": "SiAbsen SaaS",
+  "description": "Sistem absensi SaaS multi-tenant dengan dasbor Admin, HR, dan Karyawan, rekap otomatis, sinkronisasi izin/cuti, ekspor PDF/Excel, dan analitik produktivitas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

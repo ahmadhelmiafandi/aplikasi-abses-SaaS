@@ -1,0 +1,58 @@
+name: absensi_app
+description: Employee Attendance System — Powered by Supabase
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.1.0
+
+  # State management & routing
+  flutter_riverpod: ^2.3.6
+  go_router: ^12.1.3
+
+  # Supabase — auth + database + realtime
+  supabase_flutter: ^2.14.1
+
+  # Firebase for Push Notifications
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.10
+
+  # HTTP client — dipakai untuk backend Express (checkin/checkout/QR)
+  dio: ^5.3.3
+
+  # Location & utils
+  geolocator: ^10.1.0
+  intl: ^0.20.2
+  shared_preferences: ^2.5.5
+  flutter_localizations:
+    sdk: flutter
+
+  # QR Scanner
+  mobile_scanner: ^5.0.0
+
+  # File download & open
+  path_provider: ^2.1.4
+  open_filex: ^4.3.2
+  web: ^1.1.0
+
+  # Biometric authentication
+  local_auth: ^2.3.0
+  flutter_secure_storage: ^9.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/

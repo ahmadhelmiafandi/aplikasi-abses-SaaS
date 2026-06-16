@@ -1,0 +1,486 @@
+openapi: "3.0.3"
+info:
+  title: SiAbsen API
+  description: |
+    REST API untuk **Sistem Absensi Karyawan (SiAbsen)** — Multi-Tenant SaaS.
+    Semua endpoint memerlukan header `Authorization: Bearer <token>` kecuali
+    `/api/v1/auth/login`. Header `X-Tenant-ID` wajib untuk identifikasi tenant.
+  version: "1.0.0"
+  contact:
+    name: SiAbsen Support
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://api.siabsen.id
+    description: Production
+
+tags:
+  - name: Auth
+    description: Autentikasi & registrasi
+  - name: Absensi
+    description: Check-in, check-out, riwayat absensi
+  - name: Izin
+    description: Pengajuan & approval izin
+  - name: Laporan
+    description: Export laporan PDF/Excel
+  - name: QR
+    description: QR Code session management
+  - name: Users
+    description: Manajemen user (admin only)
+  - name: Profile
+    description: Profile karyawan
+  - name: Superadmin
+    description: Superadmin — kelola tenant & subscription
+
+paths:
+  # ── Auth ─────────────────────────────────────────────────────────────────
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login karyawan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        "200":
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrasi karyawan baru (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, nama, jabatan]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                nama:
+                  type: string
+                jabatan:
+                  type: string
+      responses:
+        "201":
+          description: Registrasi berhasil
+        "403":
+          $ref: "#/components/responses/PlanLimited"
+
+  # ── Absensi ──────────────────────────────────────────────────────────────
+  /api/v1/absensi/checkin:
+    post:
+      tags: [Absensi]
+      summary: Check-in karyawan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [latitude, longitude]
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                foto_url:
+                  type: string
+      responses:
+        "200":
+          description: Check-in berhasil
+        "400":
+          description: Di luar area / sudah check-in
+
+  /api/v1/absensi/checkout:
+    post:
+      tags: [Absensi]
+      summary: Check-out karyawan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [latitude, longitude]
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+      responses:
+        "200":
+          description: Check-out berhasil
+
+  /api/v1/absensi/riwayat:
+    get:
+      tags: [Absensi]
+      summary: Riwayat absensi karyawan
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bulan
+          in: query
+          schema:
+            type: integer
+        - name: tahun
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List riwayat absensi
+
+  # ── Izin ─────────────────────────────────────────────────────────────────
+  /api/v1/izin:
+    get:
+      tags: [Izin]
+      summary: List izin (semua / milik sendiri)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Daftar izin
+    post:
+      tags: [Izin]
+      summary: Ajukan izin baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [jenis_izin, tanggal_mulai, tanggal_selesai, keterangan]
+              properties:
+                jenis_izin:
+                  type: string
+                  enum: [sakit, cuti, izin]
+                tanggal_mulai:
+                  type: string
+                  format: date
+                tanggal_selesai:
+                  type: string
+                  format: date
+                keterangan:
+                  type: string
+      responses:
+        "201":
+          description: Izin diajukan
+
+  /api/v1/izin/{id}/approve:
+    put:
+      tags: [Izin]
+      summary: Setujui izin (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Izin disetujui
+
+  /api/v1/izin/{id}/reject:
+    put:
+      tags: [Izin]
+      summary: Tolak izin (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Izin ditolak
+
+  # ── Laporan ──────────────────────────────────────────────────────────────
+  /api/v1/laporan/pdf:
+    get:
+      tags: [Laporan]
+      summary: Export laporan absensi (PDF)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bulan
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: tahun
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: File PDF
+          content:
+            application/pdf: {}
+
+  /api/v1/laporan/excel:
+    get:
+      tags: [Laporan]
+      summary: Export laporan absensi (Excel)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bulan
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: tahun
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: File Excel
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: {}
+
+  # ── QR ───────────────────────────────────────────────────────────────────
+  /api/v1/qr/generate:
+    post:
+      tags: [QR]
+      summary: Generate QR session (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: QR session berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                  qr_data:
+                    type: string
+                  expired_at:
+                    type: integer
+
+  /api/v1/qr/validate:
+    post:
+      tags: [QR]
+      summary: Validasi QR session saat scan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [session_id]
+              properties:
+                session_id:
+                  type: string
+      responses:
+        "200":
+          description: QR valid
+        "400":
+          description: QR expired / invalid
+
+  # ── Users ────────────────────────────────────────────────────────────────
+  /api/v1/users:
+    get:
+      tags: [Users]
+      summary: Daftar semua user (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List users
+
+  # ── Profile ──────────────────────────────────────────────────────────────
+  /api/v1/profile:
+    get:
+      tags: [Profile]
+      summary: Ambil profil user saat ini
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Data profil
+
+  # ── Superadmin ───────────────────────────────────────────────────────────
+  /superadmin/tenants:
+    get:
+      tags: [Superadmin]
+      summary: List semua tenant
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Daftar tenant
+    post:
+      tags: [Superadmin]
+      summary: Buat tenant baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenant"
+      responses:
+        "201":
+          description: Tenant dibuat
+
+  /superadmin/tenants/{id}:
+    put:
+      tags: [Superadmin]
+      summary: Update tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenant"
+      responses:
+        "200":
+          description: Tenant diupdate
+    delete:
+      tags: [Superadmin]
+      summary: Soft-delete tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Tenant dihapus (soft-delete)
+
+  /superadmin/analytics:
+    get:
+      tags: [Superadmin]
+      summary: Statistik platform
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Analytics summary
+
+# ── Components ───────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+            user:
+              type: object
+
+    CreateTenant:
+      type: object
+      required: [name, subdomain, plan]
+      properties:
+        name:
+          type: string
+          example: PT Interia Digital
+        subdomain:
+          type: string
+          example: interia
+        plan:
+          type: string
+          enum: [free, starter, professional, enterprise]
+        admin_email:
+          type: string
+          format: email
+
+  responses:
+    Unauthorized:
+      description: Token tidak valid atau expired
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Unauthorized"
+
+    PlanLimited:
+      description: Fitur dibatasi oleh subscription plan
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Kuota karyawan sudah penuh untuk plan ini"
