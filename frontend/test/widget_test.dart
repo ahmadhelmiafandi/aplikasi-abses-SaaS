@@ -5,19 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:absensi_app/main.dart';
 import 'package:absensi_app/features/auth/presentation/auth_provider.dart';
 import 'package:absensi_app/features/auth/presentation/login_screen.dart';
-import 'package:absensi_app/core/providers/theme_provider.dart';
+import 'package:absensi_app/core/providers/realtime_provider.dart';
 
 /// Fake AuthNotifier untuk testing tanpa memanggil SDK Supabase asli.
 class FakeAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier {
   FakeAuthNotifier(super.state);
-
-  @override
-  void _init() {
-    // Kosongkan agar tidak mengakses SupabaseConfig
-  }
-
-  @override
-  Future<void> _loadProfile(String userId) async {}
 
   @override
   Future<void> login(String email, String password) async {
@@ -54,6 +46,26 @@ class FakeAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
 
   @override
   void updateCachedUser(Map<String, dynamic> updatedData) {}
+
+  @override
+  Future<String?> sendPasswordResetEmail(String email) async => null;
+}
+
+/// Fake RealtimeNotifier untuk testing tanpa memanggil SDK Supabase asli.
+class FakeRealtimeNotifier extends StateNotifier<RealtimeState> implements RealtimeNotifier {
+  FakeRealtimeNotifier() : super(const RealtimeState());
+
+  @override
+  void startListening() {}
+
+  @override
+  void stopListening() {}
+
+  @override
+  void markAllRead() {}
+
+  @override
+  void clearEvents() {}
 }
 
 void main() {
@@ -68,6 +80,9 @@ void main() {
         overrides: [
           authProvider.overrideWith((ref) {
             return FakeAuthNotifier(const AuthState(status: AuthStatus.loading)) as AuthNotifier;
+          }),
+          realtimeProvider.overrideWith((ref) {
+            return FakeRealtimeNotifier() as RealtimeNotifier;
           }),
         ],
         child: const MyApp(),
@@ -86,6 +101,9 @@ void main() {
         overrides: [
           authProvider.overrideWith((ref) {
             return FakeAuthNotifier(const AuthState(status: AuthStatus.unauthenticated)) as AuthNotifier;
+          }),
+          realtimeProvider.overrideWith((ref) {
+            return FakeRealtimeNotifier() as RealtimeNotifier;
           }),
         ],
         child: const MaterialApp(
@@ -109,6 +127,9 @@ void main() {
           authProvider.overrideWith((ref) {
             return FakeAuthNotifier(const AuthState(status: AuthStatus.unauthenticated)) as AuthNotifier;
           }),
+          realtimeProvider.overrideWith((ref) {
+            return FakeRealtimeNotifier() as RealtimeNotifier;
+          }),
         ],
         child: const MaterialApp(
           home: LoginScreen(),
@@ -131,6 +152,9 @@ void main() {
         overrides: [
           authProvider.overrideWith((ref) {
             return FakeAuthNotifier(const AuthState(status: AuthStatus.unauthenticated)) as AuthNotifier;
+          }),
+          realtimeProvider.overrideWith((ref) {
+            return FakeRealtimeNotifier() as RealtimeNotifier;
           }),
         ],
         child: const MaterialApp(

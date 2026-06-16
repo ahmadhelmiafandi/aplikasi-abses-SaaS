@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
@@ -131,7 +130,6 @@ class _AbsensiScreenState extends ConsumerState<AbsensiScreen> {
     final isDark     = ref.watch(darkModeProvider);
 
     // select() — hanya rebuild saat nama/role berubah, bukan saat token refresh
-    final userName   = ref.watch(authProvider.select((s) => s.user?['nama'] as String? ?? 'User'));
     final userRole   = ref.watch(authProvider.select((s) => s.user?['role'] as String? ?? ''));
     final userMap    = ref.watch(authProvider.select((s) => s.user));
 
@@ -835,7 +833,7 @@ class _MenuItem {
 
 class _MenuTile extends StatelessWidget {
   final _MenuItem item;
-  const _MenuTile({super.key, required this.item});
+  const _MenuTile({required this.item});
 
   @override
   Widget build(BuildContext context) {

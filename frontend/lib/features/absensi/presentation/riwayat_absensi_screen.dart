@@ -459,12 +459,12 @@ class _CalendarGrid extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: hasData
-                                      ? statusColor(status!)
+                                      ? statusColor(status)
                                       : Colors.transparent,
                                   boxShadow: hasData
                                       ? [
                                           BoxShadow(
-                                            color: statusColor(status!).withOpacity(0.4),
+                                            color: statusColor(status).withOpacity(0.4),
                                             blurRadius: 3,
                                             offset: const Offset(0, 1),
                                           ),

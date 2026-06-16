@@ -25,7 +25,6 @@ class _DaftarIzinScreenState extends ConsumerState<DaftarIzinScreen> {
   Widget build(BuildContext context) {
     final lang     = ref.watch(langProvider);
     final izinList = ref.watch(myIzinProvider);
-    final isDark   = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(

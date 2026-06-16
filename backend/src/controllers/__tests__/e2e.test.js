@@ -1,6 +1,10 @@
 const request = require('supertest');
 const app = require('../../app');
-const { DateTime } = require('luxon');
+const { DateTime, Settings } = require('luxon');
+
+// Set timezone and a fixed current time to make check-in tests deterministic across different timezones
+Settings.defaultZone = 'Asia/Jakarta';
+Settings.now = () => new Date('2026-06-17T08:05:00+07:00').getTime();
 
 // Valid UUIDs for database and validation simulation
 const ADMIN_UUID = 'e1111111-1111-4111-8111-111111111111';

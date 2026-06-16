@@ -138,7 +138,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final lang        = ref.watch(langProvider);
     final profileAsync = ref.watch(profileProvider);
-    final isDark      = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(

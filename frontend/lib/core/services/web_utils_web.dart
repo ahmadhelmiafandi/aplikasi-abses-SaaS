@@ -9,12 +9,6 @@ void reloadPage() {
 
 // ── JS interop declarations ───────────────────────────────────────────────────
 
-/// Tipe callback sukses: dipanggil dengan lat dan lng
-typedef _SuccessCallback = void Function(JSNumber lat, JSNumber lng);
-
-/// Tipe callback error: dipanggil dengan code dan message
-typedef _ErrorCallback = void Function(JSNumber code, JSString message);
-
 @JS('getLocationForFlutter')
 external void _getLocationForFlutter(
   JSFunction successCallback,
