@@ -10,16 +10,15 @@ class IzinRemoteDataSource {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('User not logged in');
 
-    PostgrestTransformBuilder<List<Map<String, dynamic>>> query = _client
+    var query = _client
         .from('izin')
-        .select('*, profiles(nama)')
-        .order('created_at', ascending: false);
+        .select('*, profiles(nama)');
 
     if (selfOnly) {
       query = query.eq('id_karyawan', user.id);
     }
 
-    final res = await query;
+    final res = await query.order('created_at', ascending: false);
     return res.map((json) => IzinModel.fromJson(json)).toList();
   }
 
