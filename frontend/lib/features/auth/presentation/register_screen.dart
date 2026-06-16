@@ -58,40 +58,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green),
-            const SizedBox(width: 8),
-            Text(lang == 'id' ? 'Registrasi Berhasil' : 'Registration Successful'),
-          ],
-        ),
-        content: Text(
-          lang == 'id'
-              ? 'Akun Anda telah dibuat dan sedang menunggu persetujuan admin. '
-                'Anda akan bisa login setelah akun diaktifkan.'
-              : 'Your account has been created and is awaiting admin approval. '
-                'You will be able to sign in once your account is activated.',
-        ),
-        actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+    // Auto-login setelah registrasi berhasil
+    setState(() => _isLoading = true);
+
+    final email = _emailCtrl.text.trim();
+    final password = _passCtrl.text;
+
+    try {
+      await ref.read(authProvider.notifier).login(email, password);
+      final finalState = ref.read(authProvider);
+      if (finalState.status == AuthStatus.unauthenticated && finalState.error != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(lang == 'id'
+                  ? 'Registrasi berhasil, tetapi gagal masuk otomatis: ${finalState.error}'
+                  : 'Registration successful, but auto-login failed: ${finalState.error}'),
+              backgroundColor: AppColors.warning,
             ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-            },
-            child: Text(lang == 'id' ? 'Kembali ke Login' : 'Back to Login'),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(lang == 'id'
+                ? 'Registrasi berhasil. Silakan login manual.'
+                : 'Registration successful. Please login manually.'),
+            backgroundColor: AppColors.warning,
           ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 
   @override

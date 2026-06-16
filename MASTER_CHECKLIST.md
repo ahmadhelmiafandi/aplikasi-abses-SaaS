@@ -219,13 +219,13 @@ CREATE INDEX IF NOT EXISTS idx_notifikasi_unread
 Ini bukan bug atau task wajib — tapi implementasi ini akan secara signifikan meningkatkan kualitas, profesionalisme, dan daya saing aplikasi:
 
 ### 💡 UX & Fitur Pengguna
-- [ ] 💡 **Lupa Password / Reset Password** — alur via Supabase Auth email reset, saat ini belum ada sama sekali
+- [x] 💡 **Lupa Password / Reset Password** — alur via Supabase Auth email reset, saat ini belum ada sama sekali
 - [ ] 💡 **Upload foto profil** — simpan ke Supabase Storage, tampilkan avatar foto nyata (bukan inisial huruf)
 - [ ] 💡 **Overtime request form** — karyawan bisa ajukan lembur terencana sebelum hari H, perlu approval manajer
 - [ ] 💡 **Jadwal kerja UI** — admin/HRD bisa atur shift dan jadwal karyawan lewat UI, bukan hanya via SQL
 - [ ] 💡 **Shift management** — CRUD shift lewat UI (saat ini shift hanya dibuat via seed script/SQL)
 - [ ] 💡 **Grafik & visualisasi** — chart kehadiran bulanan per karyawan/departemen, trend terlambat, pakai `fl_chart`
-- [ ] 💡 **Halaman "Menunggu Verifikasi"** — setelah register, tampilkan halaman informatif (bukan langsung redirect login)
+- [x] 💡 **Halaman "Menunggu Verifikasi"** — setelah register, tampilkan halaman informatif (bukan langsung redirect login)
 - [ ] 💡 **History overtime** — screen riwayat lembur per karyawan, lengkap dengan durasi dan multiplier
 
 ### 💡 Developer Experience & Arsitektur

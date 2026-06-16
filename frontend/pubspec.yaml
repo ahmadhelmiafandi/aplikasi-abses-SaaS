@@ -20,9 +20,8 @@ dependencies:
   # Supabase — auth + database + realtime
   supabase_flutter: ^2.14.1
 
-  # Firebase for Push Notifications
-  firebase_core: ^2.24.2
-  firebase_messaging: ^14.7.10
+  firebase_core: ^3.1.0
+  firebase_messaging: ^15.0.0
 
   # HTTP client — dipakai untuk backend Express (checkin/checkout/QR)
   dio: ^5.3.3

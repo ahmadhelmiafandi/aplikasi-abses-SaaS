@@ -173,6 +173,110 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ));
   }
 
+  void _showForgotPasswordDialog() {
+    final lang = ref.read(langProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final emailController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool loading = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            lang == 'id' ? 'Reset Password' : 'Reset Password',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isDark ? AppColors.darkTextPrimary : const Color(0xFF141B41),
+            ),
+          ),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  lang == 'id'
+                      ? 'Masukkan email Anda untuk menerima tautan reset password.'
+                      : 'Enter your email to receive a password reset link.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(color: isDark ? AppColors.darkTextPrimary : Colors.black),
+                  decoration: _inputDecor(
+                    Tr.get('email', lang),
+                    Icons.email_outlined,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return lang == 'id' ? 'Email wajib diisi' : 'Email is required';
+                    }
+                    if (!v.contains('@')) {
+                      return lang == 'id' ? 'Format email tidak valid' : 'Invalid email format';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: loading ? null : () => Navigator.pop(ctx),
+              child: Text(Tr.get('cancel', lang)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: loading
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => loading = true);
+                      final error = await ref
+                          .read(authProvider.notifier)
+                          .sendPasswordResetEmail(emailController.text.trim());
+                      setDialogState(() => loading = false);
+                      if (mounted) {
+                        Navigator.pop(ctx);
+                        if (error == null) {
+                          _showSnack(
+                            lang == 'id'
+                                ? 'Email reset password telah dikirim.'
+                                : 'Password reset email has been sent.',
+                          );
+                        } else {
+                          _showSnack(error, isError: true);
+                        }
+                      }
+                    },
+              child: loading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text(lang == 'id' ? 'Kirim' : 'Send'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _emailCtrl.dispose();
@@ -357,7 +461,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               : 'Password is required')
                                           : null,
                                 ),
-                                const SizedBox(height: 24),
+                                 const SizedBox(height: 8),
+                                 Align(
+                                   alignment: Alignment.centerRight,
+                                   child: TextButton(
+                                     onPressed: _showForgotPasswordDialog,
+                                     style: TextButton.styleFrom(
+                                       padding: EdgeInsets.zero,
+                                       minimumSize: Size.zero,
+                                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                     ),
+                                     child: Text(
+                                       lang == 'id' ? 'Lupa Password?' : 'Forgot Password?',
+                                       style: const TextStyle(
+                                         color: AppColors.primary,
+                                         fontSize: 13,
+                                         fontWeight: FontWeight.w600,
+                                       ),
+                                     ),
+                                   ),
+                                 ),
+                                 const SizedBox(height: 16),
 
                                 // Error
                                 if (authState.error != null) ...[

@@ -167,6 +167,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _loadProfile(userId);
   }
 
+  // ── Forgot Password ────────────────────────────────────────────────────────
+  Future<String?> sendPasswordResetEmail(String email) async {
+    try {
+      await SupabaseConfig.auth.resetPasswordForEmail(email.trim());
+      return null; // null = berhasil
+    } on AuthException catch (e) {
+      return e.message;
+    } catch (e) {
+      return 'Gagal mengirim email reset password: $e';
+    }
+  }
+
   // ── Logout ────────────────────────────────────────────────────────────────
   Future<void> logout() async {
     await SupabaseConfig.auth.signOut();
