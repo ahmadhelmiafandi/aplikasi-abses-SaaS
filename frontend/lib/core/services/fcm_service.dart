@@ -63,7 +63,11 @@ class FcmService {
       }
     } catch (e) {
       debugPrint('[FCM WARNING] Firebase gagal diinisialisasi: $e');
-      debugPrint('[FCM WARNING] Pastikan google-services.json (Android) / GoogleService-Info.plist (iOS) sudah disiapkan.');
+      if (kIsWeb) {
+        debugPrint('[FCM WARNING] Pastikan konfigurasi Firebase Web / FirebaseOptions sudah disiapkan.');
+      } else {
+        debugPrint('[FCM WARNING] Pastikan google-services.json (Android) / GoogleService-Info.plist (iOS) sudah disiapkan.');
+      }
     }
   }
 

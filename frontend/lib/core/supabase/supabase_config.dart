@@ -13,12 +13,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SupabaseConfig {
   static const String url = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://ppdutshsvguxgtyclaxj.supabase.co',
+    defaultValue: 'https://bjcozlqatjmpxtepqjpr.supabase.co',
   );
 
   static const String anonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'sb_publishable_W-HkCWET_mQyaOMs0T0WIg_ZB-HereA',
+    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqY296bHFhdGptcHh0ZXBxanByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTc3NjAsImV4cCI6MjEwMDM5Mzc2MH0.7rQJgMGP2K3Alu0t6by7vZMbsUyFgqRnLuDqF7nCIo8',
   );
 
   /// Shortcut global client

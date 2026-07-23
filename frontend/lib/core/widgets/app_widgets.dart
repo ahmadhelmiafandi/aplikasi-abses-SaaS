@@ -93,6 +93,8 @@ class RoleBadge extends StatelessWidget {
 
   static Color _color(String role) {
     switch (role.toLowerCase()) {
+      case 'superadmin':
+      case 'super_admin': return Colors.purple;
       case 'admin':    return AppColors.roleAdmin;
       case 'hrd':      return AppColors.roleHrd;
       case 'manajer':  return AppColors.roleManajer;

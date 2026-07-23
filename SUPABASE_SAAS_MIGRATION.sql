@@ -3,6 +3,9 @@
 -- Jalankan di: Supabase Dashboard → SQL Editor
 -- ============================================================
 
+-- Tambahkan role superadmin ke tipe user_role
+ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'superadmin';
+
 -- 1. SUBSCRIPTION PLANS
 CREATE TABLE IF NOT EXISTS subscription_plans (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -73,56 +76,56 @@ BEGIN
 
     -- A. departemen
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='departemen' AND column_name='id_tenant') THEN
-        ALTER TABLE departemen ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE departemen ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- B. profiles
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='id_tenant') THEN
-        ALTER TABLE profiles ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE profiles ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- C. shift
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='shift' AND column_name='id_tenant') THEN
-        ALTER TABLE shift ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE shift ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- D. jadwal_karyawan
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='jadwal_karyawan' AND column_name='id_tenant') THEN
-        ALTER TABLE jadwal_karyawan ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE jadwal_karyawan ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- E. overtime
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='overtime' AND column_name='id_tenant') THEN
-        ALTER TABLE overtime ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE overtime ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- F. absensi
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='absensi' AND column_name='id_tenant') THEN
-        ALTER TABLE absensi ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE absensi ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- G. izin
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='izin' AND column_name='id_tenant') THEN
-        ALTER TABLE izin ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE izin ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- H. notifikasi
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='notifikasi' AND column_name='id_tenant') THEN
-        ALTER TABLE notifikasi ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE notifikasi ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- I. log_aktivitas
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='log_aktivitas' AND column_name='id_tenant') THEN
-        ALTER TABLE log_aktivitas ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE log_aktivitas ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- J. qr_sessions
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='qr_sessions' AND column_name='id_tenant') THEN
-        ALTER TABLE qr_sessions ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE qr_sessions ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 
     -- K. izin_approval_logs
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='izin_approval_logs' AND column_name='id_tenant') THEN
-        ALTER TABLE izin_approval_logs ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT def_tenant_id;
+        EXECUTE format('ALTER TABLE izin_approval_logs ADD COLUMN id_tenant UUID REFERENCES tenant(id) ON DELETE CASCADE DEFAULT %L', def_tenant_id);
     END IF;
 END $$;

@@ -37,5 +37,10 @@ class AppConfig {
 
     return 'interia'; // default tenant
   }
+
+  /// Kunci keamanan Super Admin untuk API.
+  static String get superAdminKey {
+    return const String.fromEnvironment('SUPER_ADMIN_KEY', defaultValue: 'SuperAdminSecretKey');
+  }
 }
 

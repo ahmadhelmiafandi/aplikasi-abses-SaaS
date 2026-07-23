@@ -15,7 +15,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 2. ENUMS
 -- ============================================================
 DO $$ BEGIN
-  CREATE TYPE user_role        AS ENUM ('karyawan', 'manajer', 'hrd', 'admin');
+  CREATE TYPE user_role        AS ENUM ('karyawan', 'manajer', 'hrd', 'admin', 'superadmin');
   CREATE TYPE attendance_status AS ENUM ('hadir', 'terlambat', 'izin', 'alpha');
   CREATE TYPE leave_type       AS ENUM ('sakit', 'pribadi', 'cuti');
   CREATE TYPE leave_status     AS ENUM ('pending', 'disetujui', 'ditolak');

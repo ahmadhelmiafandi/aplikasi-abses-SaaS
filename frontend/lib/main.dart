@@ -24,6 +24,7 @@ import 'features/notifikasi/presentation/notifikasi_screen.dart';
 import 'features/auth/presentation/pending_approval_screen.dart';
 import 'core/providers/realtime_provider.dart';
 import 'core/services/fcm_service.dart';
+import 'features/superadmin/presentation/superadmin_dashboard_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -138,6 +139,9 @@ class MyApp extends ConsumerWidget {
         // ── Admin ──────────────────────────────────────────────────────────
         GoRoute(path: '/admin/approval-akun', builder: (c, s) => const ApprovalAkunScreen()),
         GoRoute(path: '/admin/kelola-akun',   builder: (c, s) => const KelolaKaryawanScreen()),
+
+        // ── Superadmin ──────────────────────────────────────────────────────
+        GoRoute(path: '/superadmin/dashboard', builder: (c, s) => const SuperAdminDashboardScreen()),
       ],
     );
 

@@ -495,6 +495,12 @@ class _AbsensiScreenState extends ConsumerState<AbsensiScreen> {
     }
     if (role == 'admin') {
       items.add(_MenuItem(
+        title: Tr.get('superadmin_dashboard', lang),
+        icon: Icons.admin_panel_settings,
+        color: Colors.purple,
+        route: '/superadmin/dashboard',
+      ));
+      items.add(_MenuItem(
         title: Tr.get('approval_account', lang),
         icon: Icons.person_add_outlined,
         color: const Color(0xFFD97706),

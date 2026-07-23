@@ -55,9 +55,9 @@ app.use(cors({
     if (!origin) return callback(null, true);
     if (
       allowedOrigins.includes(origin) ||
-      /^http:\/\/localhost(:\d+)?$/.test(origin) ||
-      /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin) ||
-      /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)
+      /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+      /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin) ||
+      /^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)
     ) {
       return callback(null, true);
     }
@@ -102,6 +102,7 @@ v1Router.use('/profile', profileRoutes);
 
 const superadminRoutes = require('./routes/superadmin');
 app.use('/superadmin', superadminRoutes);
+app.use('/api/superadmin', superadminRoutes);
 app.use('/api/v1', v1Router);
 app.use('/api',    v1Router);
 // ── X-API-Version header ──────────────────────────────────────────────────────

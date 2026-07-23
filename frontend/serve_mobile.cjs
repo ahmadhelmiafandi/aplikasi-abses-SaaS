@@ -49,8 +49,22 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
+  const os = require('os');
+  const networkInterfaces = os.networkInterfaces();
+  let localIp = 'localhost';
+  for (const interfaceName in networkInterfaces) {
+    for (const iface of networkInterfaces[interfaceName]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        if (!interfaceName.toLowerCase().includes('virtual') && !interfaceName.toLowerCase().includes('vbox')) {
+          localIp = iface.address;
+          break;
+        }
+      }
+    }
+  }
+
   console.log(`\n📱 Mobile Server berjalan!`);
   console.log(`   Local:   http://localhost:${PORT}`);
-  console.log(`   Network: http://192.168.1.9:${PORT}`);
+  console.log(`   Network: http://${localIp}:${PORT}`);
   console.log(`\n   Buka URL "Network" di browser HP kamu.\n`);
 });

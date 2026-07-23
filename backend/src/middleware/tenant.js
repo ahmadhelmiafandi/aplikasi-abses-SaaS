@@ -27,13 +27,22 @@ const tenantResolver = async (req, res, next) => {
     let tenant;
 
     if (tenantId) {
-      // Resolve berdasarkan Tenant ID header
-      const { data, error } = await supabase
+      // Resolve berdasarkan Tenant ID header (dukung UUID, mock ID pengujian, dan subdomain string)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const isUUID = uuidRegex.test(tenantId) || tenantId.startsWith('tenant-');
+
+      const query = supabase
         .from('tenant')
         .select('*, tenant_settings(*), subscription_plans(*)')
-        .eq('id', tenantId)
-        .eq('subscription_status', 'active')
-        .maybeSingle();
+        .eq('subscription_status', 'active');
+
+      if (isUUID) {
+        query.eq('id', tenantId);
+      } else {
+        query.eq('subdomain', tenantId.toLowerCase().trim());
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error || !data) {
         return errorResponse(res, 'Tenant tidak aktif atau tidak ditemukan', 400);
