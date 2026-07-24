@@ -294,55 +294,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isLoading = authState.status == AuthStatus.loading;
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F172A),
-              Color(0xFF1E3A8A),
-              Color(0xFF1D4ED8),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // ── Top bar — language & dark mode ──────────────────────
-              Positioned(
-                top: 8, right: 16,
-                child: Row(
-                  children: [
-                    _TopBarBtn(
-                      icon: Icons.language,
-                      label: lang == 'id' ? 'EN' : 'ID',
-                      onTap: () =>
-                          ref.read(langProvider.notifier).toggle(),
-                    ),
-                    const SizedBox(width: 8),
-                    _TopBarBtn(
-                      icon: isDark
-                          ? Icons.light_mode
-                          : Icons.dark_mode,
-                      onTap: () =>
-                          ref.read(darkModeProvider.notifier).toggle(),
-                    ),
+      backgroundColor: const Color(0xFF0F172A),
+      resizeToAvoidBottomInset: true,
+      body: Stack(
+        children: [
+          // ── Fixed Background Gradient ────────────────────────────
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF0F172A),
+                    Color(0xFF1E3A8A),
+                    Color(0xFF1D4ED8),
                   ],
                 ),
               ),
+            ),
+          ),
 
-              // ── Main content ─────────────────────────────────────────
-              Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 440),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+          // ── Content ──────────────────────────────────────────────
+          SafeArea(
+            child: Column(
+              children: [
+                // Top bar — language & dark mode
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, right: 16, left: 16),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        _TopBarBtn(
+                          icon: Icons.language,
+                          label: lang == 'id' ? 'EN' : 'ID',
+                          onTap: () =>
+                              ref.read(langProvider.notifier).toggle(),
+                        ),
+                        const SizedBox(width: 8),
+                        _TopBarBtn(
+                          icon: isDark
+                              ? Icons.light_mode
+                              : Icons.dark_mode,
+                          onTap: () =>
+                              ref.read(darkModeProvider.notifier).toggle(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Main content with ScrollView
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 440),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                         // Logo
                         Container(
                           width: 100, height: 100,
