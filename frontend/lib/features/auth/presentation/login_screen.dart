@@ -299,18 +299,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // ── Fixed Background Gradient ────────────────────────────
+          // ── Responsive Background Gradient ───────────────────────────
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF0F172A),
-                    Color(0xFF1E3A8A),
-                    Color(0xFF1D4ED8),
-                  ],
+                  colors: isDark
+                      ? const [
+                          Color(0xFF0B0F19),
+                          Color(0xFF0F172A),
+                          Color(0xFF1E293B),
+                        ]
+                      : const [
+                          Color(0xFFF8FAFC),
+                          Color(0xFFEFF6FF),
+                          Color(0xFFE2E8F0),
+                        ],
                 ),
               ),
             ),
@@ -336,15 +342,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.12)
+                                  : AppColors.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                  color: Colors.white.withOpacity(0.3)),
+                                  color: isDark
+                                      ? Colors.white.withOpacity(0.25)
+                                      : AppColors.primary.withOpacity(0.3)),
                             ),
                             child: Text(
                               lang.toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : AppColors.primary,
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -354,8 +364,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(width: 8),
                         _TopBarBtn(
                           icon: isDark
-                              ? Icons.light_mode
-                              : Icons.dark_mode,
+                              ? Icons.light_mode_rounded
+                              : Icons.dark_mode_rounded,
                           onTap: () =>
                               ref.read(darkModeProvider.notifier).toggle(),
                         ),
@@ -381,7 +391,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -399,8 +409,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 24),
                         Text(
                           Tr.get('welcome_back', lang),
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.5,
@@ -410,25 +420,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Text(
                           Tr.get('app_subtitle', lang),
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: isDark
+                                ? Colors.white.withOpacity(0.65)
+                                : const Color(0xFF64748B),
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 32),
 
                         // ── Card ───────────────────────────────────────
                         Container(
                           padding: const EdgeInsets.all(28),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? AppColors.darkSurface
+                                ? const Color(0xFF1E293B)
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0),
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
-                                blurRadius: 40,
-                                offset: const Offset(0, 20),
+                                color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
+                                blurRadius: 30,
+                                offset: const Offset(0, 10),
                               ),
                             ],
                           ),
@@ -746,26 +763,34 @@ class _TopBarBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fgColor = isDark ? Colors.white : AppColors.primary;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: isDark
+              ? Colors.white.withOpacity(0.12)
+              : AppColors.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.25)
+                  : AppColors.primary.withOpacity(0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 16),
+            Icon(icon, color: fgColor, size: 16),
             if (label != null) ...[
               const SizedBox(width: 4),
               Text(
                 label!,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: fgColor,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
