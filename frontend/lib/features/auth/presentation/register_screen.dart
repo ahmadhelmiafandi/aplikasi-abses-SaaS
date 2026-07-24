@@ -53,43 +53,56 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: AppColors.danger),
+        SnackBar(
+          content: Text(error),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
 
-    // Auto-login setelah registrasi berhasil
-    setState(() => _isLoading = true);
-
+    // Tampilkan Dialog Sukses
     final email = _emailCtrl.text.trim();
     final password = _passCtrl.text;
 
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: AppColors.success, size: 28),
+            const SizedBox(width: 10),
+            Text(lang == 'id' ? 'Registrasi Berhasil' : 'Registration Successful'),
+          ],
+        ),
+        content: Text(
+          lang == 'id'
+              ? 'Akun Anda berhasil dibuat!\n\nAkun baru memerlukan persetujuan dari Admin Perusahaan sebelum dapat digunakan untuk absensi.'
+              : 'Your account has been created successfully!\n\nNew accounts require approval from the Company Admin before use.',
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(lang == 'id' ? 'Lanjut ke Login' : 'Proceed to Sign In'),
+          ),
+        ],
+      ),
+    );
+
+    // Coba auto-login setelah dialog ditutup
+    if (!mounted) return;
     try {
       await ref.read(authProvider.notifier).login(email, password);
-      final finalState = ref.read(authProvider);
-      if (finalState.status == AuthStatus.unauthenticated && finalState.error != null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(lang == 'id'
-                  ? 'Registrasi berhasil, tetapi gagal masuk otomatis: ${finalState.error}'
-                  : 'Registration successful, but auto-login failed: ${finalState.error}'),
-              backgroundColor: AppColors.warning,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(lang == 'id'
-                ? 'Registrasi berhasil. Silakan login manual.'
-                : 'Registration successful. Please login manually.'),
-            backgroundColor: AppColors.warning,
-          ),
-        );
-      }
+    } catch (_) {
+      if (mounted) context.pop();
     }
   }
 

@@ -149,7 +149,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? alamat,
   }) async {
     try {
-      // 1. Registrasi via Supabase Auth
+      // 1. Registrasi via Supabase Auth (User metadata tersimpan aman di Supabase)
       final authRes = await SupabaseConfig.auth.signUp(
         email: email.trim(),
         password: password,
@@ -158,6 +158,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'nomor_hp': nomorHp,
           'alamat': alamat,
           'role': 'karyawan',
+          'status_aktif': false,
         },
       );
 
@@ -166,7 +167,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return 'Gagal membuat akun. Silakan coba lagi.';
       }
 
-      // 2. Simpan profil ke tabel profiles
+      // 2. Coba simpan profil ke tabel profiles (abaikan error RLS jika ditangani via trigger/metadata)
       try {
         await SupabaseConfig.client.from('profiles').upsert({
           'id': user.id,
@@ -177,18 +178,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'nomor_hp': nomorHp,
           'alamat': alamat,
         });
-      } catch (e) {
-        // Jika RLS atau trigger sudah menangani, abaikan error upsert profile
+      } catch (_) {
+        // Safe to ignore: profile metadata fallback is available
       }
 
       return null; // null = berhasil
     } on AuthException catch (e) {
-      if (e.message.contains('already registered') || e.statusCode == '400') {
-        return 'Email sudah terdaftar. Silakan gunakan email lain atau login.';
+      final msg = e.message.toLowerCase();
+      if (msg.contains('already registered') || msg.contains('already exists') || e.statusCode == '400') {
+        return 'Email ini sudah terdaftar. Silakan login atau gunakan email lain.';
       }
       return e.message;
     } catch (e) {
-      return 'Gagal membuat akun: ${e.toString()}';
+      return 'Gagal membuat akun. Pastikan koneksi internet stabil.';
     }
   }
 
