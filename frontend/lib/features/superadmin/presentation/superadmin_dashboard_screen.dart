@@ -31,10 +31,10 @@ class _SuperAdminDashboardScreenState
   ];
 
   final List<IconData> _menuIcons = [
-    Icons.dashboard_outlined,
-    Icons.domain,
-    Icons.card_membership,
-    Icons.people_outline,
+    Icons.grid_view_rounded,
+    Icons.business_rounded,
+    Icons.card_membership_rounded,
+    Icons.people_alt_rounded,
   ];
 
   Widget _buildActivePanel() {
@@ -56,46 +56,94 @@ class _SuperAdminDashboardScreenState
   Widget build(BuildContext context) {
     final lang = ref.watch(langProvider);
     final isDark = ref.watch(darkModeProvider);
+    final user = ref.watch(currentUserProvider);
     final width = MediaQuery.of(context).size.width;
     final isDesktop = width > 900;
 
+    final activeTitle = Tr.get(_menuKeys[_selectedIndex], lang);
+
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0B0F19) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text(
-          Tr.get('superadmin_dashboard', lang),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+        titleSpacing: isDesktop ? 24 : 0,
+        title: Row(
+          children: [
+            Text(
+              'Dashboard',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF94A3B8)),
+            ),
+            Text(
+              activeTitle,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
+            ),
+          ],
         ),
         actions: [
-          IconButton(
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-            onPressed: () => ref.read(darkModeProvider.notifier).toggle(),
-          ),
+          // 🌐 Language Switcher Pill
           Center(
             child: InkWell(
               onTap: () => ref.read(langProvider.notifier).toggle(),
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                margin: const EdgeInsets.symmetric(horizontal: 6),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
+                  color: isDark
+                      ? const Color(0xFF1E293B)
+                      : AppColors.primary.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-                ),
-                child: Text(
-                  lang.toUpperCase(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                    color: isDark ? Colors.white : AppColors.primary,
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : AppColors.primary.withOpacity(0.2),
                   ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      lang == 'id' ? '🇮🇩 ID' : '🇬🇧 EN',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        color: isDark ? Colors.white : AppColors.primary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
+          // 🌙 Dark Mode Toggle
           IconButton(
-            icon: const Icon(Icons.exit_to_app, color: AppColors.danger),
-            tooltip: 'Keluar / Logout',
+            icon: Icon(
+              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              color: isDark ? const Color(0xFFF1F5F9) : const Color(0xFF475569),
+              size: 20,
+            ),
+            tooltip: isDark ? 'Light Mode' : 'Dark Mode',
+            onPressed: () => ref.read(darkModeProvider.notifier).toggle(),
+          ),
+          const SizedBox(width: 4),
+          // 🚪 Logout Button
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: AppColors.danger, size: 20),
+            tooltip: 'Logout',
             onPressed: () async {
               await ref.read(authProvider.notifier).logout();
               if (context.mounted) {
@@ -103,12 +151,13 @@ class _SuperAdminDashboardScreenState
               }
             },
           ),
+          const SizedBox(width: 12),
         ],
       ),
       drawer: isDesktop
           ? null
           : Drawer(
-              child: _buildNavigationList(lang, isMobile: true),
+              child: _buildSidebar(lang, isDark, user, isMobile: true),
             ),
       body: Row(
         children: [
@@ -116,65 +165,60 @@ class _SuperAdminDashboardScreenState
             Container(
               width: 260,
               decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : Colors.white,
                 border: Border(
                   right: BorderSide(
-                    color: isDark ? AppColors.darkBorder : AppColors.border,
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                    width: 1,
                   ),
                 ),
-                color: isDark ? AppColors.darkSurface : Colors.white,
               ),
-              child: _buildNavigationList(lang, isMobile: false),
+              child: _buildSidebar(lang, isDark, user, isMobile: false),
             ),
           Expanded(
-            child: Container(
-              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-              child: _buildActivePanel(),
-            ),
+            child: _buildActivePanel(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNavigationList(String lang, {required bool isMobile}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
+  Widget _buildSidebar(String lang, bool isDark, Map<String, dynamic>? user,
+      {required bool isMobile}) {
     return Container(
-      color: isDark ? AppColors.darkSurface : Colors.white,
-      child: ListView(
-        padding: EdgeInsets.zero,
+      color: isDark ? const Color(0xFF0F172A) : Colors.white,
+      child: Column(
         children: [
-          // ── Compact header ──
+          // ── Brand Header ──────────────────────────────────────────
           Container(
             padding: EdgeInsets.only(
-              top: isMobile ? MediaQuery.of(context).padding.top + 16 : 20,
+              top: isMobile ? MediaQuery.of(context).padding.top + 16 : 24,
               left: 20,
               right: 20,
-              bottom: 16,
+              bottom: 20,
             ),
-            decoration: isMobile
-                ? const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  )
-                : null,
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
-                    color: isMobile
-                        ? Colors.white.withOpacity(0.15)
-                        : AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF3B82F6).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: Icon(
-                    Icons.admin_panel_settings,
-                    color: isMobile ? Colors.white : AppColors.primary,
-                    size: 24,
+                  child: const Center(
+                    child: Icon(Icons.shield_rounded, color: Colors.white, size: 22),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -182,28 +226,42 @@ class _SuperAdminDashboardScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Super Admin',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
-                          color: isMobile
-                              ? Colors.white
-                              : (isDark
-                                  ? AppColors.darkTextPrimary
-                                  : AppColors.textPrimary),
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            'siAbsen',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3B82F6).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'PRO',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF3B82F6),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        Tr.get('superadmin_dashboard', lang),
+                        'SaaS Super Admin',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isMobile
-                              ? Colors.white.withOpacity(0.7)
-                              : (isDark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.textSecondary),
+                          color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -213,65 +271,131 @@ class _SuperAdminDashboardScreenState
             ),
           ),
 
-          // ── Thin divider ──
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: isDark ? AppColors.darkBorder : AppColors.border,
-          ),
+          const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
+          const SizedBox(height: 16),
 
-          const SizedBox(height: 8),
-
-          // ── Menu items ──
-          for (int i = 0; i < _menuKeys.length; i++)
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
-                child: ListTile(
-                  dense: true,
-                  visualDensity: const VisualDensity(vertical: -1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  leading: Icon(
-                    _menuIcons[i],
-                    size: 20,
-                    color: _selectedIndex == i
-                        ? Colors.white
-                        : (isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.textSecondary),
-                  ),
-                  title: Text(
-                    Tr.get(_menuKeys[i], lang),
-                    style: TextStyle(
-                      fontWeight: _selectedIndex == i
-                          ? FontWeight.bold
-                          : FontWeight.w500,
-                      fontSize: 13,
-                      color: _selectedIndex == i
-                          ? Colors.white
-                          : (isDark
-                              ? AppColors.darkTextPrimary
-                              : AppColors.textPrimary),
+          // ── Navigation Menu Items ───────────────────────────────
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              itemCount: _menuKeys.length,
+              itemBuilder: (ctx, idx) {
+                final isSelected = _selectedIndex == idx;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF))
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: isSelected
+                          ? Border.all(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : AppColors.primary.withOpacity(0.2),
+                            )
+                          : null,
+                    ),
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      leading: Icon(
+                        _menuIcons[idx],
+                        size: 20,
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isDark ? const Color(0xFF64748B) : const Color(0xFF64748B)),
+                      ),
+                      title: Text(
+                        Tr.get(_menuKeys[idx], lang),
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected
+                              ? (isDark ? Colors.white : AppColors.primary)
+                              : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF334155)),
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() => _selectedIndex = idx);
+                        if (isMobile) Navigator.pop(context);
+                      },
                     ),
                   ),
-                  selected: _selectedIndex == i,
-                  selectedTileColor: AppColors.primary,
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = i;
-                    });
-                    if (isMobile) {
-                      Navigator.pop(context); // close drawer
-                    }
-                  },
-                ),
+                );
+              },
+            ),
+          ),
+
+          // ── User Profile Footer ─────────────────────────────────
+          Container(
+            margin: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
               ),
             ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.primary,
+                  child: Text(
+                    (user?['nama']?.toString().isNotEmpty == true)
+                        ? user!['nama'][0].toString().toUpperCase()
+                        : 'S',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        user?['nama']?.toString() ?? 'Super Admin',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                      ),
+                      Text(
+                        user?['email']?.toString() ?? 'helmikeren211@gmail.com',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? const Color(0xFF64748B) : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -149,9 +149,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     String? nomorHp,
     String? alamat,
-    String? tenantId,
+    String? tenantCode,
   }) async {
     try {
+      String? tenantId;
+      if (tenantCode != null && tenantCode.trim().isNotEmpty) {
+        final codeClean = tenantCode.trim().toLowerCase();
+        final tenantRes = await SupabaseConfig.client
+            .from('tenants')
+            .select('id')
+            .eq('subdomain', codeClean)
+            .maybeSingle();
+
+        if (tenantRes == null) {
+          return 'Kode/Subdomain Perusahaan "$tenantCode" tidak ditemukan. Hubungi HRD kantor Anda.';
+        }
+        tenantId = tenantRes['id']?.toString();
+      }
+
       // 1. Registrasi via Supabase Auth (User metadata tersimpan aman di Supabase)
       final authRes = await SupabaseConfig.auth.signUp(
         email: email.trim(),

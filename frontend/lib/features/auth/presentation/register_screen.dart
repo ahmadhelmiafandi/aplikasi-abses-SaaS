@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/translations.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/supabase/supabase_config.dart';
 import '../presentation/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -15,6 +14,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey         = GlobalKey<FormState>();
+  final _tenantCodeCtrl  = TextEditingController(text: 'interia');
   final _namaCtrl        = TextEditingController();
   final _emailCtrl       = TextEditingController();
   final _noHpCtrl        = TextEditingController();
@@ -25,38 +25,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscurePass   = true;
   bool _obscureConfirm = true;
 
-  List<dynamic> _tenants = [];
-  String? _selectedTenantId;
-  bool _loadingTenants = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTenants();
-  }
-
-  Future<void> _loadTenants() async {
-    try {
-      final res = await SupabaseConfig.client
-          .from('tenants')
-          .select('id, name, subdomain')
-          .eq('subscription_status', 'active');
-      if (mounted) {
-        setState(() {
-          _tenants = List<dynamic>.from(res);
-          if (_tenants.isNotEmpty) {
-            _selectedTenantId = _tenants.first['id']?.toString();
-          }
-          _loadingTenants = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) setState(() => _loadingTenants = false);
-    }
-  }
-
   @override
   void dispose() {
+    _tenantCodeCtrl.dispose();
     _namaCtrl.dispose();
     _emailCtrl.dispose();
     _noHpCtrl.dispose();
@@ -77,7 +48,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           password: _passCtrl.text,
           nomorHp: _noHpCtrl.text.trim().isEmpty ? null : _noHpCtrl.text.trim(),
           alamat: _alamatCtrl.text.trim().isEmpty ? null : _alamatCtrl.text.trim(),
-          tenantId: _selectedTenantId,
+          tenantCode: _tenantCodeCtrl.text.trim(),
         );
 
     if (!mounted) return;
@@ -243,64 +214,31 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     // ── Perusahaan / Tempat Kerja ───────────────────────────
                     _SectionLabel(
                         label: lang == 'id'
-                            ? 'Perusahaan / Tempat Kerja'
-                            : 'Company / Organization',
+                            ? 'Kode / Subdomain Perusahaan'
+                            : 'Company Code / Subdomain',
                         isDark: isDark),
                     const SizedBox(height: 12),
-                    if (_loadingTenants)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(12),
-                          child: CircularProgressIndicator(),
+                    TextFormField(
+                      controller: _tenantCodeCtrl,
+                      decoration: _inputDecor(
+                        lang == 'id'
+                            ? 'Kode Perusahaan (contoh: interia)'
+                            : 'Company Code (e.g. interia)',
+                        Icons.domain,
+                        isDark: isDark,
+                        suffixIcon: Tooltip(
+                          message: lang == 'id'
+                              ? 'Dapatkan kode resmi perusahaan dari HRD kantor Anda'
+                              : 'Get the official company code from your HRD',
+                          child: const Icon(Icons.info_outline, size: 18),
                         ),
-                      )
-                    else if (_tenants.isEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          lang == 'id'
-                              ? 'Perusahaan Default: PT Interia'
-                              : 'Default Company: PT Interia',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      )
-                    else
-                      DropdownButtonFormField<String>(
-                        value: _selectedTenantId,
-                        decoration: _inputDecor(
-                          lang == 'id' ? 'Pilih Perusahaan' : 'Select Company',
-                          Icons.domain,
-                          isDark: isDark,
-                        ),
-                        dropdownColor:
-                            isDark ? AppColors.darkSurface : Colors.white,
-                        items: _tenants.map((t) {
-                          return DropdownMenuItem<String>(
-                            value: t['id']?.toString(),
-                            child: Text(
-                              '${t['name']} (${t['subdomain']})',
-                              style: TextStyle(
-                                color: isDark
-                                    ? Colors.white
-                                    : AppColors.textPrimary,
-                                fontSize: 14,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() => _selectedTenantId = val);
-                        },
-                        validator: (v) => v == null
-                            ? (lang == 'id'
-                                ? 'Pilih perusahaan Anda'
-                                : 'Select your company')
-                            : null,
                       ),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? (lang == 'id'
+                              ? 'Kode perusahaan wajib diisi'
+                              : 'Company code is required')
+                          : null,
+                    ),
                     const SizedBox(height: 20),
 
                     // ── Informasi Pribadi ─────────────────────────────────
