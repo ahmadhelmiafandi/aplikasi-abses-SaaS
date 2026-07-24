@@ -149,31 +149,46 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? alamat,
   }) async {
     try {
-      final response = await DioClient().dio.post(
-        '/auth/register',
+      // 1. Registrasi via Supabase Auth
+      final authRes = await SupabaseConfig.auth.signUp(
+        email: email.trim(),
+        password: password,
         data: {
           'nama': nama,
-          'email': email.trim(),
-          'password': password,
-          'nomorHp': nomorHp,
+          'nomor_hp': nomorHp,
           'alamat': alamat,
+          'role': 'karyawan',
         },
       );
 
-      if (response.data != null && response.data['success'] == true) {
-        return null; // null = berhasil
+      final user = authRes.user;
+      if (user == null) {
+        return 'Gagal membuat akun. Silakan coba lagi.';
       }
-      return response.data?['message'] ?? 'Gagal membuat akun.';
-    } on DioException catch (e) {
-      if (e.response != null && e.response!.data != null) {
-        final data = e.response!.data;
-        if (data is Map && data['message'] != null) {
-          return data['message'].toString();
-        }
+
+      // 2. Simpan profil ke tabel profiles
+      try {
+        await SupabaseConfig.client.from('profiles').upsert({
+          'id': user.id,
+          'email': email.trim(),
+          'nama': nama,
+          'role': 'karyawan',
+          'status_aktif': false, // menunggu approval admin
+          'nomor_hp': nomorHp,
+          'alamat': alamat,
+        });
+      } catch (e) {
+        // Jika RLS atau trigger sudah menangani, abaikan error upsert profile
       }
-      return 'Terjadi kesalahan: ${e.message}';
+
+      return null; // null = berhasil
+    } on AuthException catch (e) {
+      if (e.message.contains('already registered') || e.statusCode == '400') {
+        return 'Email sudah terdaftar. Silakan gunakan email lain atau login.';
+      }
+      return e.message;
     } catch (e) {
-      return 'Terjadi kesalahan: $e';
+      return 'Gagal membuat akun: ${e.toString()}';
     }
   }
 

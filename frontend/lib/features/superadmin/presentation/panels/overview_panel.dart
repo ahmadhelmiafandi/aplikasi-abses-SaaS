@@ -7,6 +7,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/l10n/translations.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/supabase/supabase_config.dart';
 import '../../../../core/widgets/app_widgets.dart';
 
 class OverviewPanel extends ConsumerStatefulWidget {
@@ -41,35 +42,65 @@ class _OverviewPanelState extends ConsumerState<OverviewPanel> {
     });
 
     try {
+      // Coba lewat Supabase Direct terlebih dahulu (Serverless Web Friendly)
+      try {
+        final tenants = await SupabaseConfig.client
+            .from('tenants')
+            .select('*, subscription_plans(name)');
+        _totalTenants = tenants.length;
+
+        _planDistribution = {};
+        for (var t in tenants) {
+          final planName = t['subscription_plans']?['name']?.toString() ?? 'Free';
+          _planDistribution[planName] = (_planDistribution[planName] ?? 0) + 1;
+        }
+
+        _recentTenants = tenants.take(4).toList();
+
+        final users = await SupabaseConfig.client.from('profiles').select('status_aktif');
+        _activeUsers = users.where((u) => u['status_aktif'] == true).length;
+
+        final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+        final absensi = await SupabaseConfig.client.from('absensi').select('tanggal').eq('tanggal', todayStr);
+        _todayAbsen = absensi.length;
+
+        final leaves = await SupabaseConfig.client.from('izin_cuti').select('status').eq('status', 'pending');
+        _pendingLeaves = leaves.length;
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+        return;
+      } catch (dbErr) {
+        debugPrint('[OverviewPanel] Direct Supabase fetch failed, trying backend: $dbErr');
+      }
+
+      // Fallback ke Backend Express API
       final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
       
-      // 1. Fetch Tenants
       final tenantsRes = await DioClient().dio.get('/superadmin/tenants', options: opt);
       final List tenants = tenantsRes.data['data'] ?? [];
       _totalTenants = tenants.length;
       
-      // Calculate plan distribution
       _planDistribution = {};
       for (var t in tenants) {
         final planName = t['subscription_plans']?['name']?.toString() ?? 'Free';
         _planDistribution[planName] = (_planDistribution[planName] ?? 0) + 1;
       }
 
-      // Save recent tenants
       _recentTenants = tenants.take(4).toList();
 
-      // 2. Fetch Users
       final usersRes = await DioClient().dio.get('/superadmin/users', options: opt);
       final List users = usersRes.data['data'] ?? [];
       _activeUsers = users.where((u) => u['status_aktif'] == true).length;
 
-      // 3. Fetch Attendance
       final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final absensiRes = await DioClient().dio.get('/superadmin/absensi', options: opt);
       final List absensi = absensiRes.data['data'] ?? [];
       _todayAbsen = absensi.where((a) => a['tanggal'] == todayStr).length;
 
-      // 4. Fetch Leaves
       final leavesRes = await DioClient().dio.get('/superadmin/izin', options: opt);
       final List leaves = leavesRes.data['data'] ?? [];
       _pendingLeaves = leaves.where((l) => l['status']?.toString().toLowerCase() == 'pending').length;
