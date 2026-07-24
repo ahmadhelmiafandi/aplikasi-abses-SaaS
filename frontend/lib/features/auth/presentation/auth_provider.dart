@@ -74,20 +74,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .eq('id', userId)
           .single();
 
+      final authUser = SupabaseConfig.auth.currentUser;
+      final appRole  = authUser?.appMetadata?['role']?.toString();
+      final userRole = authUser?.userMetadata?['role']?.toString();
+      final isSuper  = data['role'] == 'superadmin' ||
+                       appRole == 'superadmin' ||
+                       userRole == 'superadmin' ||
+                       authUser?.email == 'helmikeren211@gmail.com';
+
+      if (isSuper) {
+        data['role'] = 'superadmin';
+        data['status_aktif'] = true;
+      }
+
       state = AuthState(status: AuthStatus.authenticated, user: data);
       FcmService().registerDeviceToken();
     } catch (e) {
-      // Profil belum ada (baru daftar, menunggu approval) — tetap auth
-      // agar bisa ditampilkan halaman "menunggu verifikasi"
       final authUser = SupabaseConfig.auth.currentUser;
+      final appRole  = authUser?.appMetadata?['role']?.toString();
+      final userRole = authUser?.userMetadata?['role']?.toString();
+      final isSuper  = appRole == 'superadmin' ||
+                       userRole == 'superadmin' ||
+                       authUser?.email == 'helmikeren211@gmail.com';
+
       state = AuthState(
         status: AuthStatus.authenticated,
         user: {
           'id': authUser?.id,
           'email': authUser?.email,
-          'nama': authUser?.userMetadata?['nama'] ?? '',
-          'role': 'karyawan',
-          'status_aktif': false,
+          'nama': authUser?.userMetadata?['nama'] ?? (isSuper ? 'Super Admin' : ''),
+          'role': isSuper ? 'superadmin' : 'karyawan',
+          'status_aktif': isSuper ? true : false,
         },
       );
     }

@@ -93,22 +93,29 @@ class MyApp extends ConsumerWidget {
         final isPending   = state.matchedLocation == '/pending-approval';
 
         if (!isAuth && !isAuthRoute) return '/login';
+
+        final role = authState.user?['role']?.toString();
+        final isSuperAdmin = role == 'superadmin';
+        final statusAktif  = isSuperAdmin ? true : (authState.user?['status_aktif'] ?? false);
+
         if (isAuth && isAuthRoute) {
-          // Cek apakah akun belum aktif
-          final statusAktif = authState.user?['status_aktif'] ?? true;
-          return statusAktif == true ? '/' : '/pending-approval';
+          if (isSuperAdmin) return '/superadmin/dashboard';
+          return statusAktif ? '/' : '/pending-approval';
         }
 
-        // Akun sudah login tapi belum aktif → paksa ke pending page
-        if (isAuth && !isPending && !isAuthRoute) {
-          final statusAktif = authState.user?['status_aktif'] ?? true;
-          if (statusAktif == false) return '/pending-approval';
+        // Jika superadmin mencoba akses root atau pending-approval, lempar ke dashboard superadmin
+        if (isAuth && isSuperAdmin && (isPending || state.matchedLocation == '/' || isAuthRoute)) {
+          return '/superadmin/dashboard';
         }
 
-        // Akun sudah aktif tapi masih di pending page → redirect ke home
-        if (isAuth && isPending) {
-          final statusAktif = authState.user?['status_aktif'] ?? true;
-          if (statusAktif == true) return '/';
+        // Akun biasa sudah login tapi belum aktif → paksa ke pending page
+        if (isAuth && !isPending && !isAuthRoute && !isSuperAdmin) {
+          if (!statusAktif) return '/pending-approval';
+        }
+
+        // Akun biasa sudah aktif tapi masih di pending page → redirect ke home
+        if (isAuth && isPending && !isSuperAdmin) {
+          if (statusAktif) return '/';
         }
 
         return null;
