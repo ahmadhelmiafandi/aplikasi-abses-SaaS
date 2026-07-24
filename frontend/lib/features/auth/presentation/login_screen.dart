@@ -426,9 +426,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   keyboardType:
                                       TextInputType.emailAddress,
                                   textInputAction: TextInputAction.next,
+                                  style: TextStyle(
+                                    color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                                  ),
                                   decoration: _inputDecor(
                                     Tr.get('email', lang),
                                     Icons.email_outlined,
+                                    isDark,
                                   ),
                                   validator: (v) {
                                     if (v == null || v.isEmpty) {
@@ -452,15 +456,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   obscureText: _obscurePass,
                                   textInputAction: TextInputAction.done,
                                   onFieldSubmitted: (_) => _submit(),
+                                  style: TextStyle(
+                                    color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                                  ),
                                   decoration: _inputDecor(
                                     Tr.get('password', lang),
                                     Icons.lock_outline,
+                                    isDark,
                                     suffix: IconButton(
                                       icon: Icon(
                                         _obscurePass
                                             ? Icons.visibility_off
                                             : Icons.visibility,
-                                        color: AppColors.textSecondary,
+                                        color: isDark
+                                            ? AppColors.darkTextSecondary
+                                            : AppColors.textSecondary,
                                         size: 20,
                                       ),
                                       onPressed: () => setState(() =>
@@ -608,26 +618,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  InputDecoration _inputDecor(String label, IconData icon,
+  InputDecoration _inputDecor(String label, IconData icon, bool isDark,
       {Widget? suffix}) {
     return InputDecoration(
       labelText: label,
-      prefixIcon:
-          Icon(icon, color: AppColors.textSecondary, size: 20),
+      labelStyle: TextStyle(
+        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+      ),
+      floatingLabelStyle: TextStyle(
+        color: isDark ? AppColors.accent : AppColors.primary,
+      ),
+      prefixIcon: Icon(
+        icon,
+        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+        size: 20,
+      ),
       suffixIcon: suffix,
-      border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(
+          color: isDark ? AppColors.darkBorder : AppColors.border,
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide:
-            const BorderSide(color: AppColors.primary, width: 2),
+        borderSide: BorderSide(
+          color: isDark ? AppColors.accent : AppColors.primary,
+          width: 2,
+        ),
       ),
       filled: true,
-      fillColor: AppColors.surfaceAlt,
+      fillColor: isDark ? const Color(0xFF0F172A).withOpacity(0.6) : AppColors.surfaceAlt,
     );
   }
 }
