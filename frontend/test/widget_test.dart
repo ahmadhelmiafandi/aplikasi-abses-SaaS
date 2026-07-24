@@ -32,6 +32,7 @@ class FakeAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
     required String password,
     String? nomorHp,
     String? alamat,
+    String? tenantId,
   }) async {
     return null;
   }

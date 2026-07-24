@@ -149,6 +149,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     String? nomorHp,
     String? alamat,
+    String? tenantId,
   }) async {
     try {
       // 1. Registrasi via Supabase Auth (User metadata tersimpan aman di Supabase)
@@ -161,6 +162,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'alamat': alamat,
           'role': 'karyawan',
           'status_aktif': false,
+          'id_tenant': tenantId,
         },
       );
 
@@ -169,7 +171,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return 'Gagal membuat akun. Silakan coba lagi.';
       }
 
-      // 2. Coba simpan profil ke tabel profiles (abaikan error RLS jika ditangani via trigger/metadata)
+      // 2. Coba simpan profil ke tabel profiles (terikat ke id_tenant)
       try {
         await SupabaseConfig.client.from('profiles').upsert({
           'id': user.id,
@@ -179,6 +181,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'status_aktif': false, // menunggu approval admin
           'nomor_hp': nomorHp,
           'alamat': alamat,
+          'id_tenant': tenantId,
         });
       } catch (_) {
         // Safe to ignore: profile metadata fallback is available

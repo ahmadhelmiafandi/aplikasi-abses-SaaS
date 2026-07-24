@@ -10,8 +10,6 @@ import 'panels/overview_panel.dart';
 import 'panels/tenants_panel.dart';
 import 'panels/plans_panel.dart';
 import 'panels/users_panel.dart';
-import 'panels/attendance_panel.dart';
-import 'panels/leaves_panel.dart';
 
 class SuperAdminDashboardScreen extends ConsumerStatefulWidget {
   const SuperAdminDashboardScreen({super.key});
@@ -30,8 +28,6 @@ class _SuperAdminDashboardScreenState
     'manage_tenants',
     'manage_plans',
     'manage_users',
-    'manage_absensi',
-    'manage_leaves',
   ];
 
   final List<IconData> _menuIcons = [
@@ -39,8 +35,6 @@ class _SuperAdminDashboardScreenState
     Icons.domain,
     Icons.card_membership,
     Icons.people_outline,
-    Icons.fingerprint,
-    Icons.fact_check_outlined,
   ];
 
   Widget _buildActivePanel() {
@@ -53,10 +47,6 @@ class _SuperAdminDashboardScreenState
         return const PlansPanel();
       case 3:
         return const UsersPanel();
-      case 4:
-        return const AttendancePanel();
-      case 5:
-        return const LeavesPanel();
       default:
         return const OverviewPanel();
     }
