@@ -126,111 +126,142 @@ class _SuperAdminDashboardScreenState
 
   Widget _buildNavigationList(String lang, {required bool isMobile}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        if (isMobile)
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
-              ),
+
+    return Container(
+      color: isDark ? AppColors.darkSurface : Colors.white,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          // ── Compact header ──
+          Container(
+            padding: EdgeInsets.only(
+              top: isMobile ? MediaQuery.of(context).padding.top + 16 : 20,
+              left: 20,
+              right: 20,
+              bottom: 16,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.white.withOpacity(0.2),
-                  radius: 30,
-                  child: const Icon(
-                    Icons.admin_panel_settings,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Super Admin Platform',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  Tr.get('superadmin_dashboard', lang),
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          Padding(
-            padding: const EdgeInsets.all(24.0),
+            decoration: isMobile
+                ? const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  )
+                : null,
             child: Row(
               children: [
-                const Icon(
-                  Icons.admin_panel_settings,
-                  color: AppColors.primary,
-                  size: 28,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isMobile
+                        ? Colors.white.withOpacity(0.15)
+                        : AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.admin_panel_settings,
+                    color: isMobile ? Colors.white : AppColors.primary,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    Tr.get('superadmin_dashboard', lang),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Super Admin',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                          color: isMobile
+                              ? Colors.white
+                              : (isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.textPrimary),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        Tr.get('superadmin_dashboard', lang),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isMobile
+                              ? Colors.white.withOpacity(0.7)
+                              : (isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.textSecondary),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        const Divider(),
-        for (int i = 0; i < _menuKeys.length; i++)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: ListTile(
-                leading: Icon(
-                  _menuIcons[i],
-                  color: _selectedIndex == i
-                      ? Colors.white
-                      : (isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.textSecondary),
-                ),
-                title: Text(
-                  Tr.get(_menuKeys[i], lang),
-                  style: TextStyle(
-                    fontWeight: _selectedIndex == i ? FontWeight.bold : FontWeight.w500,
+
+          // ── Thin divider ──
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: isDark ? AppColors.darkBorder : AppColors.border,
+          ),
+
+          const SizedBox(height: 8),
+
+          // ── Menu items ──
+          for (int i = 0; i < _menuKeys.length; i++)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+                child: ListTile(
+                  dense: true,
+                  visualDensity: const VisualDensity(vertical: -1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  leading: Icon(
+                    _menuIcons[i],
+                    size: 20,
                     color: _selectedIndex == i
                         ? Colors.white
                         : (isDark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.textPrimary),
+                            ? AppColors.darkTextSecondary
+                            : AppColors.textSecondary),
                   ),
+                  title: Text(
+                    Tr.get(_menuKeys[i], lang),
+                    style: TextStyle(
+                      fontWeight: _selectedIndex == i
+                          ? FontWeight.bold
+                          : FontWeight.w500,
+                      fontSize: 13,
+                      color: _selectedIndex == i
+                          ? Colors.white
+                          : (isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.textPrimary),
+                    ),
+                  ),
+                  selected: _selectedIndex == i,
+                  selectedTileColor: AppColors.primary,
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = i;
+                    });
+                    if (isMobile) {
+                      Navigator.pop(context); // close drawer
+                    }
+                  },
                 ),
-                selected: _selectedIndex == i,
-                selectedTileColor: AppColors.primary,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = i;
-                  });
-                  if (isMobile) {
-                    Navigator.pop(context); // close drawer
-                  }
-                },
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
