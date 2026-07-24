@@ -247,12 +247,29 @@ class _AbsensiScreenState extends ConsumerState<AbsensiScreen> {
                         ref.read(darkModeProvider.notifier).toggle(),
                   ),
                   const SizedBox(width: 8),
-                  // Language
-                  _HeaderAction(
-                    label: lang == 'id' ? 'EN' : 'ID',
-                    icon: Icons.language,
+                  // Language Badge
+                  InkWell(
                     onTap: () =>
                         ref.read(langProvider.notifier).toggle(),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        lang.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   // 🔔 Notifikasi bell dengan badge

@@ -81,14 +81,37 @@ class _SuperAdminDashboardScreenState
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: () => ref.read(darkModeProvider.notifier).toggle(),
           ),
-          IconButton(
-            icon: Icon(lang == 'id' ? Icons.language : Icons.g_translate),
-            onPressed: () => ref.read(langProvider.notifier).toggle(),
+          Center(
+            child: InkWell(
+              onTap: () => ref.read(langProvider.notifier).toggle(),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                ),
+                child: Text(
+                  lang.toUpperCase(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    color: isDark ? Colors.white : AppColors.primary,
+                  ),
+                ),
+              ),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.exit_to_app, color: AppColors.danger),
-            onPressed: () {
-              context.go('/');
+            tooltip: 'Keluar / Logout',
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) {
+                context.go('/');
+              }
             },
           ),
         ],
