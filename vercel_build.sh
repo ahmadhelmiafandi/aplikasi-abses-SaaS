@@ -1,16 +1,20 @@
 #!/bin/bash
 set -e
 
+# Fix dubious ownership error in Vercel build container BEFORE running flutter
+git config --global --add safe.directory '*'
+git config --global --add safe.directory /tmp/flutter
+
 echo "=== Installing Flutter SDK ==="
 FLUTTER_VERSION="3.27.4"
 curl -sL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" | tar xJ -C /tmp
 export PATH="/tmp/flutter/bin:/tmp/flutter/bin/cache/dart-sdk/bin:$PATH"
 
-# Fix dubious ownership error in Vercel build container
+git config --global --add safe.directory '*'
 git config --global --add safe.directory /tmp/flutter
-git config --global --add safe.directory /vercel/path0
 
 echo "=== Flutter Version ==="
+flutter config --no-analytics
 flutter --version
 
 echo "=== Building Flutter Web ==="
@@ -22,3 +26,4 @@ flutter build web --release --base-href "/" \
 
 echo "=== Build Complete ==="
 ls -la build/web/
+
