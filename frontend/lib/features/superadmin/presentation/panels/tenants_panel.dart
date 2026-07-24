@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
-import '../../../../core/network/dio_client.dart';
-import '../../../../core/config/app_config.dart';
-import '../../../../core/l10n/translations.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../data/superadmin_service.dart';
 
 class TenantsPanel extends ConsumerStatefulWidget {
   const TenantsPanel({super.key});
@@ -34,15 +31,8 @@ class _TenantsPanelState extends ConsumerState<TenantsPanel> {
     });
 
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      
-      // Fetch tenants
-      final tenantsRes = await DioClient().dio.get('/superadmin/tenants', options: opt);
-      _tenants = tenantsRes.data['data'] ?? [];
-
-      // Fetch plans
-      final plansRes = await DioClient().dio.get('/superadmin/plans', options: opt);
-      _plans = plansRes.data['data'] ?? [];
+      _tenants = await SuperAdminService.fetchTenants();
+      _plans = await SuperAdminService.fetchPlans();
 
       if (mounted) {
         setState(() {
@@ -61,8 +51,7 @@ class _TenantsPanelState extends ConsumerState<TenantsPanel> {
 
   Future<void> _deleteTenant(String id) async {
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      await DioClient().dio.delete('/superadmin/tenants/$id', options: opt);
+      await SuperAdminService.deleteTenant(id);
       _showSnack('Tenant berhasil dihapus');
       _fetchData();
     } catch (e) {
@@ -215,12 +204,11 @@ class _TenantsPanelState extends ConsumerState<TenantsPanel> {
                 };
 
                 try {
-                  final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
                   if (tenant == null) {
-                    await DioClient().dio.post('/superadmin/tenants', data: payload, options: opt);
+                    await SuperAdminService.createTenant(payload);
                     _showSnack('Tenant berhasil ditambahkan ✓');
                   } else {
-                    await DioClient().dio.put('/superadmin/tenants/${tenant['id']}', data: payload, options: opt);
+                    await SuperAdminService.updateTenant(tenant['id'], payload);
                     _showSnack('Tenant berhasil diperbarui ✓');
                   }
                   Navigator.pop(ctx);
@@ -240,7 +228,6 @@ class _TenantsPanelState extends ConsumerState<TenantsPanel> {
   @override
   Widget build(BuildContext context) {
     final lang = ref.watch(langProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -252,8 +239,6 @@ class _TenantsPanelState extends ConsumerState<TenantsPanel> {
         onRetry: _fetchData,
       );
     }
-
-    final isWide = MediaQuery.of(context).size.width > 800;
 
     return Padding(
       padding: const EdgeInsets.all(24),

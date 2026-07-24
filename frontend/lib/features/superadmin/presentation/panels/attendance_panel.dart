@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:dio/dio.dart';
-import '../../../../core/network/dio_client.dart';
-import '../../../../core/config/app_config.dart';
-import '../../../../core/l10n/translations.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/supabase/supabase_config.dart';
+
+import '../../data/superadmin_service.dart';
 
 class AttendancePanel extends ConsumerStatefulWidget {
   const AttendancePanel({super.key});
@@ -46,15 +44,8 @@ class _AttendancePanelState extends ConsumerState<AttendancePanel> {
     });
 
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      
-      // Fetch attendance
-      final res = await DioClient().dio.get('/superadmin/absensi', options: opt);
-      _absensi = res.data['data'] ?? [];
-
-      // Fetch tenants
-      final tenantsRes = await DioClient().dio.get('/superadmin/tenants', options: opt);
-      _tenants = tenantsRes.data['data'] ?? [];
+      _absensi = await SuperAdminService.fetchAbsensi();
+      _tenants = await SuperAdminService.fetchTenants();
 
       _applyFilters();
 
@@ -91,8 +82,7 @@ class _AttendancePanelState extends ConsumerState<AttendancePanel> {
 
   Future<void> _deleteAbsensi(String id) async {
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      await DioClient().dio.delete('/superadmin/absensi/$id', options: opt);
+      await SupabaseConfig.client.from('absensi').delete().eq('id', id);
       _showSnack('Rekam absensi berhasil dihapus ✓');
       _fetchData();
     } catch (e) {
@@ -112,7 +102,7 @@ class _AttendancePanelState extends ConsumerState<AttendancePanel> {
 
   void _openFormDialog(Map<String, dynamic> item) {
     final formKey = GlobalKey<FormState>();
-    final tanggalCtrl = TextEditingController(text: item['tanggal'] ?? '');
+    final tglCtrl = TextEditingController(text: item['tanggal'] ?? '');
     final masukCtrl = TextEditingController(text: item['jam_masuk'] ?? '');
     final keluarCtrl = TextEditingController(text: item['jam_keluar'] ?? '');
     final terlambatCtrl = TextEditingController(text: item['menit_terlambat']?.toString() ?? '0');
@@ -131,24 +121,32 @@ class _AttendancePanelState extends ConsumerState<AttendancePanel> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  controller: tanggalCtrl,
+                  controller: tglCtrl,
                   decoration: const InputDecoration(labelText: 'Tanggal (YYYY-MM-DD)'),
                   validator: (v) => v == null || v.isEmpty ? 'Tanggal wajib diisi' : null,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: masukCtrl,
-                  decoration: const InputDecoration(labelText: 'Jam Masuk (HH:MM:SS)'),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: keluarCtrl,
-                  decoration: const InputDecoration(labelText: 'Jam Keluar (HH:MM:SS)'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: masukCtrl,
+                        decoration: const InputDecoration(labelText: 'Jam Masuk (HH:mm)'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: keluarCtrl,
+                        decoration: const InputDecoration(labelText: 'Jam Keluar (HH:mm)'),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedStatus,
-                  decoration: const InputDecoration(labelText: 'Status Kehadiran'),
+                  decoration: const InputDecoration(labelText: 'Status'),
                   items: const [
                     DropdownMenuItem(value: 'hadir', child: Text('Hadir')),
                     DropdownMenuItem(value: 'terlambat', child: Text('Terlambat')),
@@ -185,7 +183,7 @@ class _AttendancePanelState extends ConsumerState<AttendancePanel> {
               if (!formKey.currentState!.validate()) return;
 
               final payload = {
-                'tanggal': tanggalCtrl.text.trim(),
+                'tanggal': tglCtrl.text.trim(),
                 'jam_masuk': masukCtrl.text.trim().isEmpty ? null : masukCtrl.text.trim(),
                 'jam_keluar': keluarCtrl.text.trim().isEmpty ? null : keluarCtrl.text.trim(),
                 'status': selectedStatus,
@@ -194,8 +192,7 @@ class _AttendancePanelState extends ConsumerState<AttendancePanel> {
               };
 
               try {
-                final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-                await DioClient().dio.put('/superadmin/absensi/${item['id']}', data: payload, options: opt);
+                await SupabaseConfig.client.from('absensi').update(payload).eq('id', item['id']);
                 _showSnack('Rekam absensi berhasil diperbarui ✓');
                 Navigator.pop(ctx);
                 _fetchData();

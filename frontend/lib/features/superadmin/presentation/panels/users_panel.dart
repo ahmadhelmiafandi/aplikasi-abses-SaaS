@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
-import '../../../../core/network/dio_client.dart';
-import '../../../../core/config/app_config.dart';
-import '../../../../core/l10n/translations.dart';
-import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_widgets.dart';
+
+import '../../data/superadmin_service.dart';
 
 class UsersPanel extends ConsumerStatefulWidget {
   const UsersPanel({super.key});
@@ -45,15 +42,8 @@ class _UsersPanelState extends ConsumerState<UsersPanel> {
     });
 
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      
-      // Fetch users
-      final usersRes = await DioClient().dio.get('/superadmin/users', options: opt);
-      _users = usersRes.data['data'] ?? [];
-
-      // Fetch tenants (for filtering and dropdown)
-      final tenantsRes = await DioClient().dio.get('/superadmin/tenants', options: opt);
-      _tenants = tenantsRes.data['data'] ?? [];
+      _users = await SuperAdminService.fetchUsers();
+      _tenants = await SuperAdminService.fetchTenants();
 
       _applyFilters();
 
@@ -88,8 +78,7 @@ class _UsersPanelState extends ConsumerState<UsersPanel> {
 
   Future<void> _deleteUser(String id) async {
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      await DioClient().dio.delete('/superadmin/users/$id', options: opt);
+      await SuperAdminService.deleteUser(id);
       _showSnack('Akun pengguna berhasil dihapus ✓');
       _fetchData();
     } catch (e) {
@@ -238,12 +227,8 @@ class _UsersPanelState extends ConsumerState<UsersPanel> {
                 }
 
                 try {
-                  final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-                  if (user == null) {
-                    await DioClient().dio.post('/superadmin/users', data: payload, options: opt);
-                    _showSnack('Pengguna berhasil dibuat ✓');
-                  } else {
-                    await DioClient().dio.put('/superadmin/users/${user['id']}', data: payload, options: opt);
+                  if (user != null) {
+                    await SuperAdminService.updateUserStatus(user['id'], statusAktif, selectedRole);
                     _showSnack('Pengguna berhasil diperbarui ✓');
                   }
                   Navigator.pop(ctx);
@@ -274,8 +259,6 @@ class _UsersPanelState extends ConsumerState<UsersPanel> {
         onRetry: _fetchData,
       );
     }
-
-    final isWide = MediaQuery.of(context).size.width > 700;
 
     return Padding(
       padding: const EdgeInsets.all(24),

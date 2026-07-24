@@ -102,7 +102,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     try {
       await ref.read(authProvider.notifier).login(email, password);
     } catch (_) {
-      if (mounted) context.pop();
+      if (mounted) Navigator.pop(context);
     }
   }
 

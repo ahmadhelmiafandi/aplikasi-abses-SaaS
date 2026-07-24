@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:dio/dio.dart';
 import '../../../core/supabase/supabase_config.dart';
-import '../../../core/network/dio_client.dart';
 import '../../../core/services/fcm_service.dart';
 
 // ---------------------------------------------------------------------------
@@ -75,8 +73,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .single();
 
       final authUser = SupabaseConfig.auth.currentUser;
-      final appRole  = authUser?.appMetadata?['role']?.toString();
-      final userRole = authUser?.userMetadata?['role']?.toString();
+      final appMetadata = authUser?.appMetadata;
+      final userMetadata = authUser?.userMetadata;
+      final appRole  = appMetadata != null ? appMetadata['role']?.toString() : null;
+      final userRole = userMetadata != null ? userMetadata['role']?.toString() : null;
       final isSuper  = data['role'] == 'superadmin' ||
                        appRole == 'superadmin' ||
                        userRole == 'superadmin' ||
@@ -91,8 +91,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       FcmService().registerDeviceToken();
     } catch (e) {
       final authUser = SupabaseConfig.auth.currentUser;
-      final appRole  = authUser?.appMetadata?['role']?.toString();
-      final userRole = authUser?.userMetadata?['role']?.toString();
+      final appMetadata = authUser?.appMetadata;
+      final userMetadata = authUser?.userMetadata;
+      final appRole  = appMetadata != null ? appMetadata['role']?.toString() : null;
+      final userRole = userMetadata != null ? userMetadata['role']?.toString() : null;
       final isSuper  = appRole == 'superadmin' ||
                        userRole == 'superadmin' ||
                        authUser?.email == 'helmikeren211@gmail.com';

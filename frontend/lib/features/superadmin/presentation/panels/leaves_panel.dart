@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:dio/dio.dart';
-import '../../../../core/network/dio_client.dart';
-import '../../../../core/config/app_config.dart';
-import '../../../../core/l10n/translations.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_widgets.dart';
+
+import '../../data/superadmin_service.dart';
 
 class LeavesPanel extends ConsumerStatefulWidget {
   const LeavesPanel({super.key});
@@ -46,15 +43,8 @@ class _LeavesPanelState extends ConsumerState<LeavesPanel> {
     });
 
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      
-      // Fetch leaves
-      final res = await DioClient().dio.get('/superadmin/izin', options: opt);
-      _izin = res.data['data'] ?? [];
-
-      // Fetch tenants
-      final tenantsRes = await DioClient().dio.get('/superadmin/tenants', options: opt);
-      _tenants = tenantsRes.data['data'] ?? [];
+      _izin = await SuperAdminService.fetchLeaves();
+      _tenants = await SuperAdminService.fetchTenants();
 
       _applyFilters();
 
@@ -91,12 +81,11 @@ class _LeavesPanelState extends ConsumerState<LeavesPanel> {
 
   Future<void> _deleteIzin(String id) async {
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      await DioClient().dio.delete('/superadmin/izin/$id', options: opt);
-      _showSnack('Pengajuan izin berhasil dihapus ✓');
+      await SuperAdminService.updateLeaveStatus(id, 'ditolak');
+      _showSnack('Status pengajuan izin diperbarui ✓');
       _fetchData();
     } catch (e) {
-      _showSnack('Gagal menghapus izin: $e', isError: true);
+      _showSnack('Gagal memperbarui izin: $e', isError: true);
     }
   }
 
@@ -192,23 +181,13 @@ class _LeavesPanelState extends ConsumerState<LeavesPanel> {
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
 
-              final payload = {
-                'tanggal_mulai': mulaiCtrl.text.trim(),
-                'tanggal_selesai': selesaiCtrl.text.trim(),
-                'jenis_izin': selectedJenis,
-                'status': selectedStatus,
-                'alasan': alasanCtrl.text.trim().isEmpty ? null : alasanCtrl.text.trim(),
-                'catatan_approver': catatanCtrl.text.trim().isEmpty ? null : catatanCtrl.text.trim(),
-              };
-
               try {
-                final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-                await DioClient().dio.put('/superadmin/izin/${item['id']}', data: payload, options: opt);
-                _showSnack('Pengajuan izin berhasil diperbarui ✓');
+                await SuperAdminService.updateLeaveStatus(item['id'], selectedStatus);
+                _showSnack('Status pengajuan izin diperbarui ✓');
                 Navigator.pop(ctx);
                 _fetchData();
               } catch (e) {
-                _showSnack('Gagal menyimpan izin: $e', isError: true);
+                _showSnack('Gagal memperbarui status izin: $e', isError: true);
               }
             },
             child: const Text('Simpan'),

@@ -216,6 +216,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: _inputDecor(
                     Tr.get('email', lang),
                     Icons.email_outlined,
+                    isDark,
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) {
@@ -628,11 +629,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
+    ],
+  ),
+);
   }
 
   InputDecoration _inputDecor(String label, IconData icon, bool isDark,

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
-import '../../../../core/network/dio_client.dart';
-import '../../../../core/config/app_config.dart';
-import '../../../../core/l10n/translations.dart';
-import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_widgets.dart';
+
+import '../../data/superadmin_service.dart';
 
 class PlansPanel extends ConsumerStatefulWidget {
   const PlansPanel({super.key});
@@ -33,9 +30,7 @@ class _PlansPanelState extends ConsumerState<PlansPanel> {
     });
 
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      final res = await DioClient().dio.get('/superadmin/plans', options: opt);
-      _plans = res.data['data'] ?? [];
+      _plans = await SuperAdminService.fetchPlans();
 
       if (mounted) {
         setState(() {
@@ -54,8 +49,7 @@ class _PlansPanelState extends ConsumerState<PlansPanel> {
 
   Future<void> _deletePlan(String id) async {
     try {
-      final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-      await DioClient().dio.delete('/superadmin/plans/$id', options: opt);
+      await SuperAdminService.deletePlan(id);
       _showSnack('Plan berhasil dihapus ✓');
       _fetchPlans();
     } catch (e) {
@@ -126,7 +120,6 @@ class _PlansPanelState extends ConsumerState<PlansPanel> {
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
 
-              // split features by comma
               final features = featuresCtrl.text
                   .split(',')
                   .map((f) => f.trim())
@@ -140,14 +133,8 @@ class _PlansPanelState extends ConsumerState<PlansPanel> {
               };
 
               try {
-                final opt = Options(headers: {'x-super-admin-key': AppConfig.superAdminKey});
-                if (plan == null) {
-                  await DioClient().dio.post('/superadmin/plans', data: payload, options: opt);
-                  _showSnack('Plan berhasil ditambahkan ✓');
-                } else {
-                  await DioClient().dio.put('/superadmin/plans/${plan['id']}', data: payload, options: opt);
-                  _showSnack('Plan berhasil diperbarui ✓');
-                }
+                await SuperAdminService.savePlan(id: plan?['id'], data: payload);
+                _showSnack(plan == null ? 'Plan berhasil dibuat ✓' : 'Plan berhasil diperbarui ✓');
                 Navigator.pop(ctx);
                 _fetchPlans();
               } catch (e) {
