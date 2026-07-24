@@ -28,7 +28,7 @@ dependencies:
 
   # Location & utils
   geolocator: ^10.1.0
-  intl: ^0.19.0
+  intl: ">=0.19.0 <0.21.0"
   shared_preferences: ^2.3.0
   flutter_localizations:
     sdk: flutter
