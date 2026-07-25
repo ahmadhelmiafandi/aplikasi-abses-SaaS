@@ -799,9 +799,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             thickness: 1,
                                             color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                                           ),
-                                          const SizedBox(height: 16),
+                                          const SizedBox(height: 14),
 
-                                          // ── Dual Symmetrical Registration Buttons ──
+                                          // ── Teks Pertanyaan Refined ──
+                                          Center(
+                                            child: Text(
+                                              lang == 'id'
+                                                  ? 'Belum Punya Akun?'
+                                                  : 'Don\'t have an account?',
+                                              style: TextStyle(
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.w500,
+                                                color: isDark
+                                                    ? const Color(0xFF94A3B8)
+                                                    : const Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+
+                                          // ── Symmetrical Dual Outlined Action Buttons ──
                                           Row(
                                             children: [
                                               Expanded(
@@ -811,44 +828,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                                     side: BorderSide(
                                                       color: isDark
-                                                          ? const Color(0xFF334155)
-                                                          : const Color(0xFFCBD5E1),
+                                                          ? const Color(0xFF38BDF8)
+                                                          : const Color(0xFF0284C7),
+                                                      width: 1.2,
                                                     ),
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(10),
                                                     ),
                                                   ),
-                                                  icon: const Icon(Icons.person_add_outlined, size: 15),
+                                                  icon: Icon(
+                                                    Icons.person_add_outlined,
+                                                    size: 15,
+                                                    color: isDark
+                                                        ? const Color(0xFF38BDF8)
+                                                        : const Color(0xFF0284C7),
+                                                  ),
                                                   label: Text(
                                                     lang == 'id' ? 'Daftar Karyawan' : 'Register Employee',
                                                     style: TextStyle(
                                                       fontSize: 11.5,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: isDark ? Colors.white70 : const Color(0xFF334155),
+                                                      fontWeight: FontWeight.bold,
+                                                      color: isDark
+                                                          ? const Color(0xFF38BDF8)
+                                                          : const Color(0xFF0284C7),
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                               const SizedBox(width: 10),
                                               Expanded(
-                                                child: ElevatedButton.icon(
+                                                child: OutlinedButton.icon(
                                                   onPressed: () => context.push('/register-tenant'),
-                                                  style: ElevatedButton.styleFrom(
+                                                  style: OutlinedButton.styleFrom(
                                                     padding: const EdgeInsets.symmetric(vertical: 12),
-                                                    backgroundColor: const Color(0xFF1D4ED8),
-                                                    elevation: 0,
+                                                    side: BorderSide(
+                                                      color: isDark
+                                                          ? const Color(0xFF34D399)
+                                                          : const Color(0xFF059669),
+                                                      width: 1.2,
+                                                    ),
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(10),
                                                     ),
                                                   ),
-                                                  icon: const Icon(Icons.domain_add_rounded,
-                                                      size: 15, color: Colors.white),
+                                                  icon: Icon(
+                                                    Icons.domain_add_rounded,
+                                                    size: 15,
+                                                    color: isDark
+                                                        ? const Color(0xFF34D399)
+                                                        : const Color(0xFF059669),
+                                                  ),
                                                   label: Text(
                                                     lang == 'id' ? 'Daftar Perusahaan' : 'Register Company',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontSize: 11.5,
                                                       fontWeight: FontWeight.bold,
-                                                      color: Colors.white,
+                                                      color: isDark
+                                                          ? const Color(0xFF34D399)
+                                                          : const Color(0xFF059669),
                                                     ),
                                                   ),
                                                 ),
