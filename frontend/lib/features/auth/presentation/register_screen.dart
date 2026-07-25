@@ -295,7 +295,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       decoration: _inputDecor(
                           Tr.get('address', lang),
                           Icons.location_on_outlined,
-                          isDark: isDark),
+                          isDark: isDark,
+                          isMultiline: true),
                     ),
                     const SizedBox(height: 24),
 
@@ -382,26 +383,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  InputDecoration _inputDecor(String label, IconData icon,
-      {Widget? suffixIcon, required bool isDark}) {
+  InputDecoration _inputDecor(String hint, IconData icon,
+      {Widget? suffixIcon, required bool isDark, bool isMultiline = false}) {
     return InputDecoration(
-      labelText: label,
+      hintText: hint,
+      hintStyle: TextStyle(
+        fontSize: 14,
+        color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+      ),
       prefixIcon: Icon(icon,
-          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
           size: 20),
       suffixIcon: suffixIcon,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      alignLabelWithHint: isMultiline,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-            color: isDark ? AppColors.darkBorder : AppColors.border),
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
       filled: true,
-      fillColor: isDark ? AppColors.darkSurfaceAlt : AppColors.surfaceAlt,
+      fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
     );
   }
 }
