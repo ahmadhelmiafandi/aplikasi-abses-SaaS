@@ -163,7 +163,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: {
           'id': 'demo-karyawan-id-67890',
           'email': 'karyawan.demo@siabsen.com',
-          'nama': 'Ahmad Helmi (Demo Karyawan)',
+          'nama': 'karyawan (Demo Karyawan)',
           'role': 'karyawan',
           'status_aktif': true,
           'tenant_id': 'demo-tenant-id-001',
