@@ -848,45 +848,63 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 14),
+                                    const SizedBox(height: 16),
+                                    Divider(height: 1, thickness: 1, color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                    const SizedBox(height: 16),
 
-                                    TextButton.icon(
-                                      onPressed: () => context.push('/register'),
-                                      icon: const Icon(Icons.person_add_outlined, size: 16),
-                                      label: Text(
-                                        Tr.get('no_account', lang),
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    InkWell(
-                                      onTap: () => context.push('/register-tenant'),
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(Icons.domain_add_rounded,
-                                                size: 16, color: Color(0xFF1D4ED8)),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              lang == 'id'
-                                                  ? 'Daftar Perusahaan Baru (SaaS Tenant)'
-                                                  : 'Register New Company (SaaS)',
-                                              style: const TextStyle(
-                                                color: Color(0xFF1D4ED8),
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 13,
+                                    // ── Dua Tombol Pendaftaran Simetris & Rapi ──
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: () => context.push('/register'),
+                                            style: OutlinedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              side: BorderSide(
+                                                color: isDark
+                                                    ? const Color(0xFF334155)
+                                                    : const Color(0xFFCBD5E1),
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
                                               ),
                                             ),
-                                          ],
+                                            icon: const Icon(Icons.person_add_outlined, size: 16),
+                                            label: Text(
+                                              lang == 'id' ? 'Daftar Karyawan' : 'Register Employee',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDark ? Colors.white70 : const Color(0xFF334155),
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: () => context.push('/register-tenant'),
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              backgroundColor: const Color(0xFF1D4ED8),
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                            icon: const Icon(Icons.domain_add_rounded,
+                                                size: 16, color: Colors.white),
+                                            label: Text(
+                                              lang == 'id' ? 'Daftar Perusahaan' : 'Register Company',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
