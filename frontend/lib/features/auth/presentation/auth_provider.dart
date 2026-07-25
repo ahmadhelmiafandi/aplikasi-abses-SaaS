@@ -159,7 +159,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final tenantRes = await SupabaseConfig.client
             .from('tenants')
             .select('id')
-            .or('company_code.ilike.${codeClean},subdomain.ilike.${codeClean.toLowerCase()}')
+            .or('company_code.ilike.$codeClean,subdomain.ilike.${codeClean.toLowerCase()}')
             .maybeSingle();
 
         if (tenantRes == null) {
