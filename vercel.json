@@ -3,6 +3,19 @@
   "outputDirectory": "frontend/build/web",
   "framework": null,
   "installCommand": "echo 'skip'",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "aplikasi-abses-saa-s.vercel.app"
+        }
+      ],
+      "destination": "https://siabsen-app.vercel.app/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
