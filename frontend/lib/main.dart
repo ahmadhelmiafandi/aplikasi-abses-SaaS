@@ -26,6 +26,9 @@ import 'features/auth/presentation/pending_approval_screen.dart';
 import 'core/providers/realtime_provider.dart';
 import 'core/services/fcm_service.dart';
 import 'features/superadmin/presentation/superadmin_dashboard_screen.dart';
+import 'features/pengumuman/presentation/pengumuman_screen.dart';
+import 'features/payroll/presentation/payroll_screen.dart';
+import 'features/kalender/presentation/kalender_acara_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +48,84 @@ Future<void> main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
+/// Provider router agar tidak ter-instansiasi ulang saat darkModeProvider berubah
+final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authProvider);
+
+  return GoRouter(
+    initialLocation: '/',
+    redirect: (context, state) {
+      final isAuth      = authState.status == AuthStatus.authenticated;
+      final isAuthRoute = ['/login', '/register', '/register-tenant'].contains(state.matchedLocation);
+      final isPending   = state.matchedLocation == '/pending-approval';
+
+      if (!isAuth && !isAuthRoute) return '/login';
+
+      final role = authState.user?['role']?.toString();
+      final isSuperAdmin = role == 'superadmin';
+      final statusAktif  = isSuperAdmin ? true : (authState.user?['status_aktif'] ?? false);
+
+      if (isAuth && isAuthRoute) {
+        if (isSuperAdmin) return '/superadmin/dashboard';
+        return statusAktif ? '/' : '/pending-approval';
+      }
+
+      // Jika superadmin mencoba akses root atau pending-approval, lempar ke dashboard superadmin
+      if (isAuth && isSuperAdmin && (isPending || state.matchedLocation == '/' || isAuthRoute)) {
+        return '/superadmin/dashboard';
+      }
+
+      // Akun biasa sudah login tapi belum aktif → paksa ke pending page
+      if (isAuth && !isPending && !isAuthRoute && !isSuperAdmin) {
+        if (!statusAktif) return '/pending-approval';
+      }
+
+      // Akun biasa sudah aktif tapi masih di pending page → redirect ke home
+      if (isAuth && isPending && !isSuperAdmin) {
+        if (statusAktif) return '/';
+      }
+
+      return null;
+    },
+    routes: [
+      // ── Core ───────────────────────────────────────────────────────────
+      GoRoute(path: '/',              builder: (c, s) => const AbsensiScreen()),
+      GoRoute(path: '/login',         builder: (c, s) => const LoginScreen()),
+      GoRoute(path: '/register',      builder: (c, s) => const RegisterScreen()),
+      GoRoute(path: '/register-tenant', builder: (c, s) => const RegisterTenantScreen()),
+      GoRoute(path: '/pending-approval', builder: (c, s) => const PendingApprovalScreen()),
+
+      // ── Absensi ────────────────────────────────────────────────────────
+      GoRoute(path: '/absensi/scan-qr',  builder: (c, s) => const QrScanScreen()),
+      GoRoute(path: '/absensi/riwayat',  builder: (c, s) => const RiwayatAbsensiScreen()),
+
+      // ── Izin ───────────────────────────────────────────────────────────
+      GoRoute(path: '/izin',         builder: (c, s) => const DaftarIzinScreen()),
+      GoRoute(path: '/izin/ajukan',  builder: (c, s) => const FormIzinScreen()),
+      GoRoute(path: '/approval/izin', builder: (c, s) => const ApprovalIzinScreen()),
+
+      // ── Laporan ────────────────────────────────────────────────────────
+      GoRoute(path: '/laporan', builder: (c, s) => const DashboardLaporanScreen()),
+
+      // ── Profil & Notifikasi ────────────────────────────────────────────
+      GoRoute(path: '/profil',       builder: (c, s) => const ProfileScreen()),
+      GoRoute(path: '/notifikasi',   builder: (c, s) => const NotifikasiScreen()),
+
+      // ── Fitur Baru: Pengumuman, Payroll, Kalender Acara ───────────────
+      GoRoute(path: '/pengumuman',   builder: (c, s) => const PengumumanScreen()),
+      GoRoute(path: '/payroll',      builder: (c, s) => const PayrollScreen()),
+      GoRoute(path: '/kalender',     builder: (c, s) => const KalenderAcaraScreen()),
+
+      // ── Admin ──────────────────────────────────────────────────────────
+      GoRoute(path: '/admin/approval-akun', builder: (c, s) => const ApprovalAkunScreen()),
+      GoRoute(path: '/admin/kelola-akun',   builder: (c, s) => const KelolaKaryawanScreen()),
+
+      // ── Superadmin ──────────────────────────────────────────────────────
+      GoRoute(path: '/superadmin/dashboard', builder: (c, s) => const SuperAdminDashboardScreen()),
+    ],
+  );
+});
+
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -52,6 +133,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState  = ref.watch(authProvider);
     final isDarkMode = ref.watch(darkModeProvider);
+    final router     = ref.watch(routerProvider);
 
     // Hubungkan/putuskan Supabase Realtime berdasarkan status login
     if (authState.status == AuthStatus.authenticated &&
@@ -85,74 +167,6 @@ class MyApp extends ConsumerWidget {
         ],
       );
     }
-
-    final router = GoRouter(
-      initialLocation: '/',
-      redirect: (context, state) {
-        final isAuth      = authState.status == AuthStatus.authenticated;
-        final isAuthRoute = ['/login', '/register', '/register-tenant'].contains(state.matchedLocation);
-        final isPending   = state.matchedLocation == '/pending-approval';
-
-        if (!isAuth && !isAuthRoute) return '/login';
-
-        final role = authState.user?['role']?.toString();
-        final isSuperAdmin = role == 'superadmin';
-        final statusAktif  = isSuperAdmin ? true : (authState.user?['status_aktif'] ?? false);
-
-        if (isAuth && isAuthRoute) {
-          if (isSuperAdmin) return '/superadmin/dashboard';
-          return statusAktif ? '/' : '/pending-approval';
-        }
-
-        // Jika superadmin mencoba akses root atau pending-approval, lempar ke dashboard superadmin
-        if (isAuth && isSuperAdmin && (isPending || state.matchedLocation == '/' || isAuthRoute)) {
-          return '/superadmin/dashboard';
-        }
-
-        // Akun biasa sudah login tapi belum aktif → paksa ke pending page
-        if (isAuth && !isPending && !isAuthRoute && !isSuperAdmin) {
-          if (!statusAktif) return '/pending-approval';
-        }
-
-        // Akun biasa sudah aktif tapi masih di pending page → redirect ke home
-        if (isAuth && isPending && !isSuperAdmin) {
-          if (statusAktif) return '/';
-        }
-
-        return null;
-      },
-      routes: [
-        // ── Core ───────────────────────────────────────────────────────────
-        GoRoute(path: '/',      builder: (c, s) => const AbsensiScreen()),
-        GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
-        GoRoute(path: '/register', builder: (c, s) => const RegisterScreen()),
-        GoRoute(path: '/register-tenant', builder: (c, s) => const RegisterTenantScreen()),
-        GoRoute(path: '/pending-approval', builder: (c, s) => const PendingApprovalScreen()),
-
-        // ── Absensi ────────────────────────────────────────────────────────
-        GoRoute(path: '/absensi/scan-qr',  builder: (c, s) => const QrScanScreen()),
-        GoRoute(path: '/absensi/riwayat',  builder: (c, s) => const RiwayatAbsensiScreen()),
-
-        // ── Izin ───────────────────────────────────────────────────────────
-        GoRoute(path: '/izin',         builder: (c, s) => const DaftarIzinScreen()),
-        GoRoute(path: '/izin/ajukan',  builder: (c, s) => const FormIzinScreen()),
-        GoRoute(path: '/approval/izin', builder: (c, s) => const ApprovalIzinScreen()),
-
-        // ── Laporan ────────────────────────────────────────────────────────
-        GoRoute(path: '/laporan', builder: (c, s) => const DashboardLaporanScreen()),
-
-        // ── Profil & Notifikasi ────────────────────────────────────────────
-        GoRoute(path: '/profil',       builder: (c, s) => const ProfileScreen()),
-        GoRoute(path: '/notifikasi',   builder: (c, s) => const NotifikasiScreen()),
-
-        // ── Admin ──────────────────────────────────────────────────────────
-        GoRoute(path: '/admin/approval-akun', builder: (c, s) => const ApprovalAkunScreen()),
-        GoRoute(path: '/admin/kelola-akun',   builder: (c, s) => const KelolaKaryawanScreen()),
-
-        // ── Superadmin ──────────────────────────────────────────────────────
-        GoRoute(path: '/superadmin/dashboard', builder: (c, s) => const SuperAdminDashboardScreen()),
-      ],
-    );
 
     return MaterialApp.router(
       title: 'SiAbsen',

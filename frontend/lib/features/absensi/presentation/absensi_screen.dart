@@ -15,7 +15,15 @@ import '../../auth/presentation/auth_provider.dart';
 import '../../notifikasi/presentation/notifikasi_screen.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
+final demoAbsensiProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
+
 final todayStatusProvider = FutureProvider.autoDispose((ref) async {
+  final user = ref.watch(currentUserProvider);
+  final isDemo = user?['id']?.toString().startsWith('demo-') == true ||
+                 user?['email']?.toString().contains('demo') == true;
+  if (isDemo) {
+    return ref.watch(demoAbsensiProvider);
+  }
   return await SupabaseService.getTodayAbsensi();
 });
 
@@ -59,8 +67,25 @@ class _AbsensiScreenState extends ConsumerState<AbsensiScreen> {
 
   // ── Check In ────────────────────────────────────────────────────────────────
   Future<void> _checkIn() async {
+    final user = ref.read(currentUserProvider);
+    final isDemo = user?['id']?.toString().startsWith('demo-') == true ||
+                   user?['email']?.toString().contains('demo') == true;
+
     setState(() => _isLoading = true);
     try {
+      if (isDemo) {
+        await Future.delayed(const Duration(milliseconds: 250));
+        ref.read(demoAbsensiProvider.notifier).state = {
+          'jam_masuk': DateFormat('HH:mm:ss').format(DateTime.now()),
+          'status': 'hadir',
+          'keterangan': 'WFO (Demo)',
+          'tanggal': DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        };
+        ref.invalidate(todayStatusProvider);
+        _showSnack('${Tr.get("check_in_success", ref.read(langProvider))} (Demo)');
+        return;
+      }
+
       LocationResult locationResult;
 
       // Cek apakah perlu tampilkan rationale dulu
@@ -99,8 +124,24 @@ class _AbsensiScreenState extends ConsumerState<AbsensiScreen> {
 
   // ── Check Out ───────────────────────────────────────────────────────────────
   Future<void> _checkOut() async {
+    final user = ref.read(currentUserProvider);
+    final isDemo = user?['id']?.toString().startsWith('demo-') == true ||
+                   user?['email']?.toString().contains('demo') == true;
+
     setState(() => _isLoading = true);
     try {
+      if (isDemo) {
+        await Future.delayed(const Duration(milliseconds: 250));
+        final current = ref.read(demoAbsensiProvider) ?? {};
+        ref.read(demoAbsensiProvider.notifier).state = {
+          ...current,
+          'jam_keluar': DateFormat('HH:mm:ss').format(DateTime.now()),
+        };
+        ref.invalidate(todayStatusProvider);
+        _showSnack('${Tr.get("check_out_success", ref.read(langProvider))} (Demo)');
+        return;
+      }
+
       await DioClient().dio.post('/absensi/checkout');
       ref.invalidate(todayStatusProvider);
       _showSnack(Tr.get('check_out_success', ref.read(langProvider)));
@@ -491,6 +532,27 @@ class _AbsensiScreenState extends ConsumerState<AbsensiScreen> {
         icon: Icons.qr_code_scanner,
         color: const Color(0xFF7C3AED),
         route: '/absensi/scan-qr',
+      ),
+      // Pengumuman — semua role
+      _MenuItem(
+        title: Tr.get('pengumuman', lang),
+        icon: Icons.campaign_outlined,
+        color: const Color(0xFFEA580C),
+        route: '/pengumuman',
+      ),
+      // Payroll — semua role
+      _MenuItem(
+        title: Tr.get('payroll', lang),
+        icon: Icons.account_balance_wallet_outlined,
+        color: const Color(0xFF16A34A),
+        route: '/payroll',
+      ),
+      // Kalender Acara — semua role
+      _MenuItem(
+        title: Tr.get('kalender_acara', lang),
+        icon: Icons.calendar_month_outlined,
+        color: const Color(0xFF2563EB),
+        route: '/kalender',
       ),
     ];
 

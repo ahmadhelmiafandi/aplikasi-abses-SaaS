@@ -43,6 +43,9 @@ class Tr {
     // Navigation / menu
     'menu':                  'Menu',
     'attendance_history':    'Riwayat\nAbsensi',
+    'pengumuman':            'Pengumuman\nPerusahaan',
+    'payroll':               'Payroll &\nSlip Gaji',
+    'kalender_acara':        'Kalender &\nRapat',
     // Laporan
     'detail_per_karyawan':   'Detail Per Karyawan',
     'karyawan_count':        'karyawan',
@@ -286,6 +289,9 @@ class Tr {
     // Navigation / menu
     'menu':                  'Menu',
     'attendance_history':    'Attendance\nHistory',
+    'pengumuman':            'Company\nAnnouncements',
+    'payroll':               'Payroll &\nPayslip',
+    'kalender_acara':        'Calendar &\nMeetings',
     // Laporan
     'detail_per_karyawan':   'Per Employee Detail',
     'karyawan_count':        'employees',
