@@ -352,22 +352,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 _doLogin('admin@interia.com', '123456');
               },
             ),
-            const SizedBox(height: 10),
-            _DemoRoleTile(
-              icon: Icons.shield_rounded,
-              iconColor: const Color(0xFFA855F7),
-              title: lang == 'id' ? 'Demo Super Admin SaaS' : 'SaaS Super Admin Demo',
-              subtitle: lang == 'id'
-                  ? 'Kelola Perusahaan Tenant, Plan & Platform SaaS'
-                  : 'Manage Tenants, Plans & SaaS Platform Global',
-              isDark: isDark,
-              onTap: () {
-                Navigator.pop(ctx);
-                _emailCtrl.text = 'helmikeren211@gmail.com';
-                _passwordCtrl.text = '123456';
-                _doLogin('helmikeren211@gmail.com', '123456');
-              },
-            ),
           ],
         ),
         actions: [
