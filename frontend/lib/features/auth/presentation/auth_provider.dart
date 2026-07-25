@@ -171,6 +171,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  // ── Instant Demo Login ───────────────────────────────────────────────────
+  void loginDemo(String role) {
+    if (role == 'admin') {
+      state = const AuthState(
+        status: AuthStatus.authenticated,
+        user: {
+          'id': 'demo-admin-id-12345',
+          'email': 'admin.demo@siabsen.com',
+          'nama': 'Admin HRD (Demo Mode)',
+          'role': 'admin',
+          'status_aktif': true,
+          'tenant_id': 'demo-tenant-id-001',
+          'nama_perusahaan': 'PT SiAbsen Demo Enterprise',
+        },
+      );
+    } else {
+      state = const AuthState(
+        status: AuthStatus.authenticated,
+        user: {
+          'id': 'demo-karyawan-id-67890',
+          'email': 'karyawan.demo@siabsen.com',
+          'nama': 'Ahmad Helmi (Demo Karyawan)',
+          'role': 'karyawan',
+          'status_aktif': true,
+          'tenant_id': 'demo-tenant-id-001',
+          'nama_perusahaan': 'PT SiAbsen Demo Enterprise',
+        },
+      );
+    }
+  }
+
   // ── Register ──────────────────────────────────────────────────────────────
   Future<String?> register({
     required String nama,
