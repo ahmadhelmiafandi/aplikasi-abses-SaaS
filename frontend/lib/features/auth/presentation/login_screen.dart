@@ -278,6 +278,111 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  void _showDemoDialog(String lang, bool isDark) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.rocket_launch_rounded, color: Color(0xFF3B82F6), size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                lang == 'id' ? 'Pilih Mode Demo' : 'Select Demo Mode',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              lang == 'id'
+                  ? 'Pilih peran di bawah ini untuk mencoba seluruh fitur secara instan 1-klik:'
+                  : 'Select a role below to test all features instantly with 1-click:',
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _DemoRoleTile(
+              icon: Icons.person_rounded,
+              iconColor: const Color(0xFF22C55E),
+              title: lang == 'id' ? 'Demo Karyawan' : 'Employee Demo',
+              subtitle: lang == 'id'
+                  ? 'Check-In GPS, Scan QR Code & Pengajuan Izin'
+                  : 'GPS Check-In, QR Scan & Leave Requests',
+              isDark: isDark,
+              onTap: () {
+                Navigator.pop(ctx);
+                _emailCtrl.text = 'karyawan@interia.com';
+                _passwordCtrl.text = '123456';
+                _doLogin('karyawan@interia.com', '123456');
+              },
+            ),
+            const SizedBox(height: 10),
+            _DemoRoleTile(
+              icon: Icons.business_center_rounded,
+              iconColor: const Color(0xFF3B82F6),
+              title: lang == 'id' ? 'Demo Admin Perusahaan / HRD' : 'Company Admin Demo',
+              subtitle: lang == 'id'
+                  ? 'Kelola karyawan, persetujuan izin & lokasi kantor'
+                  : 'Manage employees, leave approvals & geofencing',
+              isDark: isDark,
+              onTap: () {
+                Navigator.pop(ctx);
+                _emailCtrl.text = 'admin@interia.com';
+                _passwordCtrl.text = '123456';
+                _doLogin('admin@interia.com', '123456');
+              },
+            ),
+            const SizedBox(height: 10),
+            _DemoRoleTile(
+              icon: Icons.shield_rounded,
+              iconColor: const Color(0xFFA855F7),
+              title: lang == 'id' ? 'Demo Super Admin SaaS' : 'SaaS Super Admin Demo',
+              subtitle: lang == 'id'
+                  ? 'Kelola Perusahaan Tenant, Plan & Platform SaaS'
+                  : 'Manage Tenants, Plans & SaaS Platform Global',
+              isDark: isDark,
+              onTap: () {
+                Navigator.pop(ctx);
+                _emailCtrl.text = 'helmikeren211@gmail.com';
+                _passwordCtrl.text = '123456';
+                _doLogin('helmikeren211@gmail.com', '123456');
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              Tr.get('cancel', lang),
+              style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _emailCtrl.dispose();
@@ -625,17 +730,88 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                                 const SizedBox(height: 16),
 
-                                // Register link
-                                TextButton(
-                                  onPressed: () =>
-                                      context.push('/register'),
-                                  child: Text(
-                                    Tr.get('no_account', lang),
-                                    style: const TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
+                                // ── Pilihan Pendaftaran (Karyawan vs Tenant Baru) ──
+                                Column(
+                                  children: [
+                                    // 🚀 Tombol Demo Aplikasi Instan
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 44,
+                                      child: OutlinedButton.icon(
+                                        onPressed: () => _showDemoDialog(lang, isDark),
+                                        style: OutlinedButton.styleFrom(
+                                          side: BorderSide(
+                                            color: isDark
+                                                ? const Color(0xFF38BDF8)
+                                                : const Color(0xFF0284C7),
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          backgroundColor: isDark
+                                              ? const Color(0xFF38BDF8).withOpacity(0.08)
+                                              : const Color(0xFF0284C7).withOpacity(0.06),
+                                        ),
+                                        icon: const Icon(
+                                          Icons.rocket_launch_rounded,
+                                          size: 18,
+                                          color: Color(0xFF0284C7),
+                                        ),
+                                        label: Text(
+                                          lang == 'id'
+                                              ? 'Coba Demo Aplikasi (Tanpa Daftar)'
+                                              : 'Try App Demo (Instant Test)',
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? const Color(0xFF38BDF8)
+                                                : const Color(0xFF0284C7),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13.5,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 14),
+
+                                    TextButton.icon(
+                                      onPressed: () => context.push('/register'),
+                                      icon: const Icon(Icons.person_add_outlined, size: 16),
+                                      label: Text(
+                                        Tr.get('no_account', lang),
+                                        style: const TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    InkWell(
+                                      onTap: () => context.push('/register-tenant'),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.domain_add_rounded,
+                                                size: 16, color: Color(0xFF1D4ED8)),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              lang == 'id'
+                                                  ? 'Daftar Perusahaan Baru (SaaS Tenant)'
+                                                  : 'Register New Company (SaaS)',
+                                              style: const TextStyle(
+                                                color: Color(0xFF1D4ED8),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -796,6 +972,80 @@ class _TopBarBtn extends StatelessWidget {
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Demo Role Tile Widget ───────────────────────────────────────────────────
+class _DemoRoleTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _DemoRoleTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF94A3B8)),
           ],
         ),
       ),

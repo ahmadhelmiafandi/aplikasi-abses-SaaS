@@ -10,6 +10,7 @@ import 'core/providers/theme_provider.dart';
 import 'features/auth/presentation/auth_provider.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/register_screen.dart';
+import 'features/auth/presentation/register_tenant_screen.dart';
 import 'features/absensi/presentation/absensi_screen.dart';
 import 'features/absensi/presentation/qr_scan_screen.dart';
 import 'features/absensi/presentation/riwayat_absensi_screen.dart';
@@ -89,7 +90,7 @@ class MyApp extends ConsumerWidget {
       initialLocation: '/',
       redirect: (context, state) {
         final isAuth      = authState.status == AuthStatus.authenticated;
-        final isAuthRoute = ['/login', '/register'].contains(state.matchedLocation);
+        final isAuthRoute = ['/login', '/register', '/register-tenant'].contains(state.matchedLocation);
         final isPending   = state.matchedLocation == '/pending-approval';
 
         if (!isAuth && !isAuthRoute) return '/login';
@@ -125,6 +126,7 @@ class MyApp extends ConsumerWidget {
         GoRoute(path: '/',      builder: (c, s) => const AbsensiScreen()),
         GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
         GoRoute(path: '/register', builder: (c, s) => const RegisterScreen()),
+        GoRoute(path: '/register-tenant', builder: (c, s) => const RegisterTenantScreen()),
         GoRoute(path: '/pending-approval', builder: (c, s) => const PendingApprovalScreen()),
 
         // ── Absensi ────────────────────────────────────────────────────────
