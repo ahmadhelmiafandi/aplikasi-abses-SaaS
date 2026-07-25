@@ -14,7 +14,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey         = GlobalKey<FormState>();
-  final _tenantCodeCtrl  = TextEditingController(text: 'TC-88A92K');
+  final _tenantCodeCtrl  = TextEditingController();
   final _namaCtrl        = TextEditingController();
   final _emailCtrl       = TextEditingController();
   final _noHpCtrl        = TextEditingController();
