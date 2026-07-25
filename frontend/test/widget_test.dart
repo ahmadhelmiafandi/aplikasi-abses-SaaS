@@ -26,6 +26,9 @@ class FakeAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
   }
 
   @override
+  void loginDemo(String role) {}
+
+  @override
   Future<String?> register({
     required String nama,
     required String email,

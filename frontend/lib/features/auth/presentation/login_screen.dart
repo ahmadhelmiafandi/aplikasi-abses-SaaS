@@ -6,7 +6,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/l10n/translations.dart';
 import '../../../core/services/biometric_service.dart';
-import '../../../core/supabase/supabase_config.dart';
 import 'auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -782,74 +781,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           ),
                                           const SizedBox(height: 10),
 
-                                          // ── Symmetrical Dual Outlined Action Buttons ──
+                                          // ── Symmetrical Dual Outlined Action Buttons (Fixed 44px Height) ──
                                           Row(
                                             children: [
                                               Expanded(
-                                                child: OutlinedButton.icon(
-                                                  onPressed: () => context.push('/register'),
-                                                  style: OutlinedButton.styleFrom(
-                                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                                    side: BorderSide(
+                                                child: SizedBox(
+                                                  height: 44,
+                                                  child: OutlinedButton.icon(
+                                                    onPressed: () => context.push('/register'),
+                                                    style: OutlinedButton.styleFrom(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                                                      minimumSize: const Size.fromHeight(44),
+                                                      side: BorderSide(
+                                                        color: isDark
+                                                            ? const Color(0xFF38BDF8)
+                                                            : const Color(0xFF0284C7),
+                                                        width: 1.2,
+                                                      ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                    ),
+                                                    icon: Icon(
+                                                      Icons.person_add_outlined,
+                                                      size: 15,
                                                       color: isDark
                                                           ? const Color(0xFF38BDF8)
                                                           : const Color(0xFF0284C7),
-                                                      width: 1.2,
                                                     ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                  ),
-                                                  icon: Icon(
-                                                    Icons.person_add_outlined,
-                                                    size: 15,
-                                                    color: isDark
-                                                        ? const Color(0xFF38BDF8)
-                                                        : const Color(0xFF0284C7),
-                                                  ),
-                                                  label: Text(
-                                                    lang == 'id' ? 'Daftar Karyawan' : 'Register Employee',
-                                                    style: TextStyle(
-                                                      fontSize: 11.5,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: isDark
-                                                          ? const Color(0xFF38BDF8)
-                                                          : const Color(0xFF0284C7),
+                                                    label: Text(
+                                                      lang == 'id' ? 'Daftar Karyawan' : 'Register Employee',
+                                                      style: TextStyle(
+                                                        fontSize: 11.5,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: isDark
+                                                            ? const Color(0xFF38BDF8)
+                                                            : const Color(0xFF0284C7),
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                               const SizedBox(width: 10),
                                               Expanded(
-                                                child: OutlinedButton.icon(
-                                                  onPressed: () => context.push('/register-tenant'),
-                                                  style: OutlinedButton.styleFrom(
-                                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                                    side: BorderSide(
+                                                child: SizedBox(
+                                                  height: 44,
+                                                  child: OutlinedButton.icon(
+                                                    onPressed: () => context.push('/register-tenant'),
+                                                    style: OutlinedButton.styleFrom(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                                                      minimumSize: const Size.fromHeight(44),
+                                                      side: BorderSide(
+                                                        color: isDark
+                                                            ? const Color(0xFF34D399)
+                                                            : const Color(0xFF059669),
+                                                        width: 1.2,
+                                                      ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                    ),
+                                                    icon: Icon(
+                                                      Icons.domain_add_rounded,
+                                                      size: 15,
                                                       color: isDark
                                                           ? const Color(0xFF34D399)
                                                           : const Color(0xFF059669),
-                                                      width: 1.2,
                                                     ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                  ),
-                                                  icon: Icon(
-                                                    Icons.domain_add_rounded,
-                                                    size: 15,
-                                                    color: isDark
-                                                        ? const Color(0xFF34D399)
-                                                        : const Color(0xFF059669),
-                                                  ),
-                                                  label: Text(
-                                                    lang == 'id' ? 'Daftar Perusahaan' : 'Register Company',
-                                                    style: TextStyle(
-                                                      fontSize: 11.5,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: isDark
-                                                          ? const Color(0xFF34D399)
-                                                          : const Color(0xFF059669),
+                                                    label: Text(
+                                                      lang == 'id' ? 'Daftar Perusahaan' : 'Register Company',
+                                                      style: TextStyle(
+                                                        fontSize: 11.5,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: isDark
+                                                            ? const Color(0xFF34D399)
+                                                            : const Color(0xFF059669),
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
