@@ -171,13 +171,14 @@ void main() {
     expect(find.text('Masuk'), findsOneWidget);
     expect(find.text('Sign In'), findsNothing);
 
-    // Cari tombol bahasa (EN) dan klik
-    final langBtn = find.text('EN');
+    // Cari tombol bahasa ('ID') dan klik
+    final langBtn = find.text('ID');
     expect(langBtn, findsOneWidget);
     await tester.tap(langBtn);
     await tester.pumpAndSettle();
 
-    // Verifikasi teks berubah menjadi Bahasa Inggris (Sign In)
+    // Verifikasi teks tombol bahasa berubah menjadi 'EN' dan teks login berubah menjadi 'Sign In'
+    expect(find.text('EN'), findsOneWidget);
     expect(find.text('Sign In'), findsOneWidget);
     expect(find.text('Masuk'), findsNothing);
   });
