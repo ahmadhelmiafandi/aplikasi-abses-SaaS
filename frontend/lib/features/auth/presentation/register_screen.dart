@@ -14,7 +14,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey         = GlobalKey<FormState>();
-  final _tenantCodeCtrl  = TextEditingController(text: 'interia');
+  final _tenantCodeCtrl  = TextEditingController(text: 'TC-88A92K');
   final _namaCtrl        = TextEditingController();
   final _emailCtrl       = TextEditingController();
   final _noHpCtrl        = TextEditingController();
@@ -65,10 +65,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    // Tampilkan Dialog Sukses
-    final email = _emailCtrl.text.trim();
-    final password = _passCtrl.text;
-
+    // Modal Dialog Sukses Pendaftaran
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -76,36 +73,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.check_circle, color: AppColors.success, size: 28),
+            const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
             const SizedBox(width: 10),
-            Text(lang == 'id' ? 'Registrasi Berhasil' : 'Registration Successful'),
+            Expanded(
+              child: Text(
+                lang == 'id' ? 'Registrasi Berhasil' : 'Registration Successful',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
           ],
         ),
         content: Text(
           lang == 'id'
-              ? 'Akun Anda berhasil dibuat!\n\nAkun baru memerlukan persetujuan dari Admin Perusahaan sebelum dapat digunakan untuk absensi.'
-              : 'Your account has been created successfully!\n\nNew accounts require approval from the Company Admin before use.',
+              ? 'Akun Anda berhasil terdaftar! Silakan tunggu verifikasi dan aktivasi dari Admin sebelum Anda dapat login.'
+              : 'Your account has been registered! Please wait for Admin verification and activation before signing in.',
+          style: const TextStyle(fontSize: 14),
         ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () => Navigator.pop(ctx),
-            child: Text(lang == 'id' ? 'Lanjut ke Login' : 'Proceed to Sign In'),
+            child: Text(
+              lang == 'id' ? 'Saya Mengerti' : 'Understood',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
     );
 
-    // Coba auto-login setelah dialog ditutup
-    if (!mounted) return;
-    try {
-      await ref.read(authProvider.notifier).login(email, password);
-    } catch (_) {
-      if (mounted) Navigator.pop(context);
+    if (mounted) {
+      Navigator.pop(context);
     }
   }
 
@@ -214,29 +215,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     // ── Perusahaan / Tempat Kerja ───────────────────────────
                     _SectionLabel(
                         label: lang == 'id'
-                            ? 'Kode / Subdomain Perusahaan'
-                            : 'Company Code / Subdomain',
+                            ? 'Token Kode Perusahaan'
+                            : 'Company Token Code',
                         isDark: isDark),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _tenantCodeCtrl,
                       decoration: _inputDecor(
                         lang == 'id'
-                            ? 'Kode Perusahaan (contoh: interia)'
-                            : 'Company Code (e.g. interia)',
-                        Icons.domain,
+                            ? 'Token Kode (contoh: TC-88A92K)'
+                            : 'Token Code (e.g. TC-88A92K)',
+                        Icons.key_rounded,
                         isDark: isDark,
                         suffixIcon: Tooltip(
                           message: lang == 'id'
-                              ? 'Dapatkan kode resmi perusahaan dari HRD kantor Anda'
-                              : 'Get the official company code from your HRD',
+                              ? 'Dapatkan token kode resmi dari HRD kantor Anda'
+                              : 'Get the official token code from your HRD',
                           child: const Icon(Icons.info_outline, size: 18),
                         ),
                       ),
                       validator: (v) => (v == null || v.trim().isEmpty)
                           ? (lang == 'id'
-                              ? 'Kode perusahaan wajib diisi'
-                              : 'Company code is required')
+                              ? 'Token kode perusahaan wajib diisi'
+                              : 'Company token code is required')
                           : null,
                     ),
                     const SizedBox(height: 20),
@@ -387,6 +388,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       {Widget? suffixIcon, required bool isDark, bool isMultiline = false}) {
     return InputDecoration(
       hintText: hint,
+      floatingLabelBehavior: FloatingLabelBehavior.never,
       hintStyle: TextStyle(
         fontSize: 14,
         color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),

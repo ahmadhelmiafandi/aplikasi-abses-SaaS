@@ -193,9 +193,11 @@ class _TenantsPanelState extends ConsumerState<TenantsPanel> {
               onPressed: () async {
                 if (!formKey.currentState!.validate()) return;
                 
+                final tokenGen = tenant?['company_code'] ?? 'TC-${subdomainCtrl.text.trim().toUpperCase()}${DateTime.now().millisecondsSinceEpoch.toString().substring(9)}';
                 final payload = {
                   'name': nameCtrl.text.trim(),
                   'subdomain': subdomainCtrl.text.trim().toLowerCase(),
+                  'company_code': tokenGen,
                   'id_plan': selectedPlanId,
                   'status': selectedStatus,
                   'office_lat': double.tryParse(officeLatCtrl.text),
