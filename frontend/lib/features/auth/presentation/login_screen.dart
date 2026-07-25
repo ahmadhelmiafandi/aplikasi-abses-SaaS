@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/l10n/translations.dart';
 import '../../../core/services/biometric_service.dart';
+import '../../../core/supabase/supabase_config.dart';
 import 'auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -331,9 +332,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               isDark: isDark,
               onTap: () {
                 Navigator.pop(ctx);
-                _emailCtrl.text = 'karyawan@interia.com';
-                _passwordCtrl.text = '123456';
-                _doLogin('karyawan@interia.com', '123456');
+                _loginDemoUser('karyawan.demo.siabsen@gmail.com', '123456', 'Karyawan Demo', 'karyawan');
               },
             ),
             const SizedBox(height: 10),
@@ -347,9 +346,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               isDark: isDark,
               onTap: () {
                 Navigator.pop(ctx);
-                _emailCtrl.text = 'admin@interia.com';
-                _passwordCtrl.text = '123456';
-                _doLogin('admin@interia.com', '123456');
+                _loginDemoUser('admin.demo.siabsen@gmail.com', '123456', 'Admin HRD Demo', 'admin');
               },
             ),
           ],
@@ -365,6 +362,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _loginDemoUser(
+      String email, String pass, String nama, String role) async {
+    _emailCtrl.text = email;
+    await ref.read(authProvider.notifier).login(email, pass);
+    if (ref.read(authProvider).status == AuthStatus.authenticated) return;
+
+    try {
+      final res = await SupabaseConfig.auth.signUp(
+        email: email,
+        password: pass,
+        data: {
+          'nama': nama,
+          'role': role,
+          'status_aktif': true,
+        },
+      );
+      final user = res.user;
+      if (user != null) {
+        try {
+          await SupabaseConfig.client.from('profiles').upsert({
+            'id': user.id,
+            'email': email,
+            'nama': nama,
+            'role': role,
+            'status_aktif': true,
+          });
+        } catch (_) {}
+      }
+      await ref.read(authProvider.notifier).login(email, pass);
+    } catch (e) {
+      if (mounted) {
+        _showSnack('Gagal masuk ke akun demo: $e', isError: true);
+      }
+    }
   }
 
   @override
@@ -384,7 +417,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isLoading = authState.status == AuthStatus.loading;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: isDark ? const Color(0xFF0B0F19) : const Color(0xFFF8FAFC),
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
@@ -463,424 +496,384 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-                // Main content with ScrollView
+                // Main content with ScrollView (Scrollbars Hidden on Web Desktop)
                 Expanded(
                   child: Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 440),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                        // Logo
-                        Container(
-                          width: 100, height: 100,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.asset(
-                              'assets/logo.jpg',
-                              width: 100, height: 100,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          Tr.get('welcome_back', lang),
-                          style: TextStyle(
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          Tr.get('app_subtitle', lang),
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.65)
-                                : const Color(0xFF64748B),
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-
-                        // ── Banner Onboarding SaaS Perusahaan Baru (UX Call to Action) ──
-                        Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF1D4ED8).withOpacity(isDark ? 0.4 : 0.25),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 420),
                           child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(Icons.domain_add_rounded,
-                                        color: Colors.white, size: 26),
+                              // ── Card Login Utama ───────────────────
+                              Container(
+                                padding: const EdgeInsets.all(28),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E293B)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFE2E8F0),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          lang == 'id'
-                                              ? 'Ingin Daftarkan Perusahaan Anda?'
-                                              : 'Want to Register Your Company?',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          lang == 'id'
-                                              ? 'Dapatkan Token Kode instan untuk karyawan Anda'
-                                              : 'Get instant Token Code for all employees',
-                                          style: TextStyle(
-                                            color: Colors.white.withOpacity(0.85),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 14),
-                              SizedBox(
-                                width: double.infinity,
-                                height: 42,
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF1D4ED8),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12)),
-                                    elevation: 0,
-                                  ),
-                                  onPressed: () => context.push('/register-tenant'),
-                                  icon: const Icon(Icons.add_business_rounded,
-                                      size: 18, color: Color(0xFF1D4ED8)),
-                                  label: Text(
-                                    lang == 'id'
-                                        ? 'Daftar Perusahaan Baru (SaaS Tenant)'
-                                        : 'Register New Company (SaaS)',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 13.5,
-                                      color: Color(0xFF1D4ED8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // ── Card Login & Register Karyawan ───────────────────
-                        Container(
-                          padding: const EdgeInsets.all(28),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1E293B)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFE2E8F0),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
-                                blurRadius: 30,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.stretch,
-                              children: [
-                                // Email
-                                TextFormField(
-                                  controller: _emailCtrl,
-                                  keyboardType:
-                                      TextInputType.emailAddress,
-                                  textInputAction: TextInputAction.next,
-                                  style: TextStyle(
-                                    color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
-                                  ),
-                                  decoration: _inputDecor(
-                                    Tr.get('email', lang),
-                                    Icons.email_outlined,
-                                    isDark,
-                                  ),
-                                  validator: (v) {
-                                    if (v == null || v.isEmpty) {
-                                      return lang == 'id'
-                                          ? 'Email tidak boleh kosong'
-                                          : 'Email is required';
-                                    }
-                                    if (!v.contains('@')) {
-                                      return lang == 'id'
-                                          ? 'Format email tidak valid'
-                                          : 'Invalid email format';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Password
-                                TextFormField(
-                                  controller: _passwordCtrl,
-                                  obscureText: _obscurePass,
-                                  textInputAction: TextInputAction.done,
-                                  onFieldSubmitted: (_) => _submit(),
-                                  style: TextStyle(
-                                    color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
-                                  ),
-                                  decoration: _inputDecor(
-                                    Tr.get('password', lang),
-                                    Icons.lock_outline,
-                                    isDark,
-                                    suffix: IconButton(
-                                      icon: Icon(
-                                        _obscurePass
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
-                                        color: isDark
-                                            ? AppColors.darkTextSecondary
-                                            : AppColors.textSecondary,
-                                        size: 20,
-                                      ),
-                                      onPressed: () => setState(() =>
-                                          _obscurePass = !_obscurePass),
-                                    ),
-                                  ),
-                                  validator: (v) =>
-                                      (v == null || v.isEmpty)
-                                          ? (lang == 'id'
-                                              ? 'Password tidak boleh kosong'
-                                              : 'Password is required')
-                                          : null,
-                                ),
-                                 const SizedBox(height: 8),
-                                 Align(
-                                   alignment: Alignment.centerRight,
-                                   child: TextButton(
-                                     onPressed: _showForgotPasswordDialog,
-                                     style: TextButton.styleFrom(
-                                       padding: EdgeInsets.zero,
-                                       minimumSize: Size.zero,
-                                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                     ),
-                                     child: Text(
-                                       lang == 'id' ? 'Lupa Password?' : 'Forgot Password?',
-                                       style: const TextStyle(
-                                         color: AppColors.primary,
-                                         fontSize: 13,
-                                         fontWeight: FontWeight.w600,
-                                       ),
-                                     ),
-                                   ),
-                                 ),
-                                 const SizedBox(height: 16),
-
-                                // Error
-                                if (authState.error != null) ...[
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.dangerLight,
-                                      borderRadius:
-                                          BorderRadius.circular(10),
-                                      border: Border.all(
-                                          color: AppColors.danger
-                                              .withOpacity(0.3)),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.error_outline,
-                                            color: AppColors.danger,
-                                            size: 18),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            authState.error!,
-                                            style: const TextStyle(
-                                              color: AppColors.danger,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                ],
-
-                                // ── Sign In button ─────────────────────
-                                SizedBox(
-                                  height: 52,
-                                  child: ElevatedButton(
-                                    onPressed: isLoading
-                                        ? null
-                                        : _submit,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: isLoading
-                                        ? const SizedBox(
-                                            height: 22, width: 22,
-                                            child:
-                                                CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2.5,
-                                            ),
-                                          )
-                                        : Text(
-                                            Tr.get('sign_in', lang),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                  ),
-                                ),
-
-                                // ── Biometric button ───────────────────
-                                if (!kIsWeb &&
-                                    _biometricAvailable) ...[
-                                  const SizedBox(height: 12),
-                                  _BiometricButton(
-                                    enabled: _biometricEnabled,
-                                    loading: _biometricLoading,
-                                    lang: lang,
-                                    isDark: isDark,
-                                    onTap: _biometricEnabled
-                                        ? () => _loginWithBiometric()
-                                        : _promptEnableBiometric,
-                                  ),
-                                ],
-
-                                const SizedBox(height: 16),
-
-                                // ── Pilihan Pendaftaran (Karyawan vs Tenant Baru) ──
-                                Column(
-                                  children: [
-                                    // 🚀 Tombol Demo Aplikasi Instan
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 44,
-                                      child: OutlinedButton.icon(
-                                        onPressed: () => _showDemoDialog(lang, isDark),
-                                        style: OutlinedButton.styleFrom(
-                                          side: BorderSide(
-                                            color: isDark
-                                                ? const Color(0xFF38BDF8)
-                                                : const Color(0xFF0284C7),
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          backgroundColor: isDark
-                                              ? const Color(0xFF38BDF8).withOpacity(0.08)
-                                              : const Color(0xFF0284C7).withOpacity(0.06),
-                                        ),
-                                        icon: const Icon(
-                                          Icons.rocket_launch_rounded,
-                                          size: 18,
-                                          color: Color(0xFF0284C7),
-                                        ),
-                                        label: Text(
-                                          lang == 'id'
-                                              ? 'Coba Demo Aplikasi (Tanpa Daftar)'
-                                              : 'Try App Demo (Instant Test)',
-                                          style: TextStyle(
-                                            color: isDark
-                                                ? const Color(0xFF38BDF8)
-                                                : const Color(0xFF0284C7),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13.5,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    TextButton.icon(
-                                      onPressed: () => context.push('/register'),
-                                      icon: const Icon(Icons.person_add_outlined, size: 16),
-                                      label: Text(
-                                        lang == 'id'
-                                            ? 'Belum Punya Akun? Daftar Karyawan'
-                                            : 'No Account? Register as Employee',
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 13.5,
-                                        ),
-                                      ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 10),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
+                                child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      // Logo & Welcome Header (Inside Unified Card)
+                                      Center(
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                              width: 76,
+                                              height: 76,
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(18),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+                                                    blurRadius: 16,
+                                                    offset: const Offset(0, 6),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(18),
+                                                child: Image.asset(
+                                                  'assets/logo.jpg',
+                                                  width: 76,
+                                                  height: 76,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              Tr.get('welcome_back', lang),
+                                              style: TextStyle(
+                                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: -0.5,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              Tr.get('app_subtitle', lang),
+                                              style: TextStyle(
+                                                color: isDark
+                                                    ? Colors.white.withOpacity(0.65)
+                                                    : const Color(0xFF64748B),
+                                                fontSize: 13.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+
+                                      // Email
+                                      TextFormField(
+                                        controller: _emailCtrl,
+                                        keyboardType: TextInputType.emailAddress,
+                                        textInputAction: TextInputAction.next,
+                                        style: TextStyle(
+                                          color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                                        ),
+                                        decoration: _inputDecor(
+                                          Tr.get('email', lang),
+                                          Icons.email_outlined,
+                                          isDark,
+                                        ),
+                                        validator: (v) {
+                                          if (v == null || v.isEmpty) {
+                                            return lang == 'id'
+                                                ? 'Email tidak boleh kosong'
+                                                : 'Email is required';
+                                          }
+                                          if (!v.contains('@')) {
+                                            return lang == 'id'
+                                                ? 'Format email tidak valid'
+                                                : 'Invalid email format';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      // Password
+                                      TextFormField(
+                                        controller: _passwordCtrl,
+                                        obscureText: _obscurePass,
+                                        textInputAction: TextInputAction.done,
+                                        onFieldSubmitted: (_) => _submit(),
+                                        style: TextStyle(
+                                          color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                                        ),
+                                        decoration: _inputDecor(
+                                          Tr.get('password', lang),
+                                          Icons.lock_outline,
+                                          isDark,
+                                          suffix: IconButton(
+                                            icon: Icon(
+                                              _obscurePass
+                                                  ? Icons.visibility_off
+                                                  : Icons.visibility,
+                                              color: isDark
+                                                  ? AppColors.darkTextSecondary
+                                                  : AppColors.textSecondary,
+                                              size: 20,
+                                            ),
+                                            onPressed: () => setState(() =>
+                                                _obscurePass = !_obscurePass),
+                                          ),
+                                        ),
+                                        validator: (v) =>
+                                            (v == null || v.isEmpty)
+                                                ? (lang == 'id'
+                                                    ? 'Password tidak boleh kosong'
+                                                    : 'Password is required')
+                                                : null,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: TextButton(
+                                          onPressed: _showForgotPasswordDialog,
+                                          style: TextButton.styleFrom(
+                                            padding: EdgeInsets.zero,
+                                            minimumSize: Size.zero,
+                                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          ),
+                                          child: Text(
+                                            lang == 'id' ? 'Lupa Password?' : 'Forgot Password?',
+                                            style: const TextStyle(
+                                              color: AppColors.primary,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      // Error Message
+                                      if (authState.error != null) ...[
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.dangerLight,
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(
+                                                color: AppColors.danger.withOpacity(0.3)),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.error_outline,
+                                                  color: AppColors.danger,
+                                                  size: 18),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  authState.error!,
+                                                  style: const TextStyle(
+                                                    color: AppColors.danger,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                      ],
+
+                                      // ── Sign In Button ─────────────────────
+                                      SizedBox(
+                                        height: 48,
+                                        child: ElevatedButton(
+                                          onPressed: isLoading ? null : _submit,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          child: isLoading
+                                              ? const SizedBox(
+                                                  height: 22,
+                                                  width: 22,
+                                                  child: CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                    strokeWidth: 2.5,
+                                                  ),
+                                                )
+                                              : Text(
+                                                  Tr.get('sign_in', lang),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+
+                                      // Biometric Button
+                                      if (!kIsWeb && _biometricAvailable) ...[
+                                        const SizedBox(height: 12),
+                                        _BiometricButton(
+                                          enabled: _biometricEnabled,
+                                          loading: _biometricLoading,
+                                          lang: lang,
+                                          isDark: isDark,
+                                          onTap: _biometricEnabled
+                                              ? () => _loginWithBiometric()
+                                              : _promptEnableBiometric,
+                                        ),
+                                      ],
+
+                                      const SizedBox(height: 16),
+
+                                      // ── Demo & Registration Options ──
+                                      Column(
+                                        children: [
+                                          // 🚀 Tombol Demo Aplikasi Instan
+                                          SizedBox(
+                                            width: double.infinity,
+                                            height: 44,
+                                            child: OutlinedButton.icon(
+                                              onPressed: () => _showDemoDialog(lang, isDark),
+                                              style: OutlinedButton.styleFrom(
+                                                side: BorderSide(
+                                                  color: isDark
+                                                      ? const Color(0xFF38BDF8)
+                                                      : const Color(0xFF0284C7),
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                backgroundColor: isDark
+                                                    ? const Color(0xFF38BDF8).withOpacity(0.08)
+                                                    : const Color(0xFF0284C7).withOpacity(0.06),
+                                              ),
+                                              icon: const Icon(
+                                                Icons.rocket_launch_rounded,
+                                                size: 18,
+                                                color: Color(0xFF0284C7),
+                                              ),
+                                              label: Text(
+                                                lang == 'id'
+                                                    ? 'Coba Demo Aplikasi (Tanpa Daftar)'
+                                                    : 'Try App Demo (Instant Test)',
+                                                style: TextStyle(
+                                                  color: isDark
+                                                      ? const Color(0xFF38BDF8)
+                                                      : const Color(0xFF0284C7),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 16),
+                                          Divider(
+                                            height: 1,
+                                            thickness: 1,
+                                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                          ),
+                                          const SizedBox(height: 16),
+
+                                          // ── Dual Symmetrical Registration Buttons ──
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: OutlinedButton.icon(
+                                                  onPressed: () => context.push('/register'),
+                                                  style: OutlinedButton.styleFrom(
+                                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                                    side: BorderSide(
+                                                      color: isDark
+                                                          ? const Color(0xFF334155)
+                                                          : const Color(0xFFCBD5E1),
+                                                    ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                  ),
+                                                  icon: const Icon(Icons.person_add_outlined, size: 15),
+                                                  label: Text(
+                                                    lang == 'id' ? 'Daftar Karyawan' : 'Register Employee',
+                                                    style: TextStyle(
+                                                      fontSize: 11.5,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: isDark ? Colors.white70 : const Color(0xFF334155),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: ElevatedButton.icon(
+                                                  onPressed: () => context.push('/register-tenant'),
+                                                  style: ElevatedButton.styleFrom(
+                                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                                    backgroundColor: const Color(0xFF1D4ED8),
+                                                    elevation: 0,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                  ),
+                                                  icon: const Icon(Icons.domain_add_rounded,
+                                                      size: 15, color: Colors.white),
+                                                  label: Text(
+                                                    lang == 'id' ? 'Daftar Perusahaan' : 'Register Company',
+                                                    style: const TextStyle(
+                                                      fontSize: 11.5,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    ],
-  ),
-);
+    );
   }
 
   InputDecoration _inputDecor(String label, IconData icon, bool isDark,
