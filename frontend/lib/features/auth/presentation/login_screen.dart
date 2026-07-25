@@ -515,9 +515,102 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 28),
 
-                        // ── Card ───────────────────────────────────────
+                        // ── Banner Onboarding SaaS Perusahaan Baru (UX Call to Action) ──
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF1D4ED8).withOpacity(isDark ? 0.4 : 0.25),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(Icons.domain_add_rounded,
+                                        color: Colors.white, size: 26),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          lang == 'id'
+                                              ? 'Ingin Daftarkan Perusahaan Anda?'
+                                              : 'Want to Register Your Company?',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          lang == 'id'
+                                              ? 'Dapatkan Token Kode instan untuk karyawan Anda'
+                                              : 'Get instant Token Code for all employees',
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(0.85),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 42,
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFF1D4ED8),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12)),
+                                    elevation: 0,
+                                  ),
+                                  onPressed: () => context.push('/register-tenant'),
+                                  icon: const Icon(Icons.add_business_rounded,
+                                      size: 18, color: Color(0xFF1D4ED8)),
+                                  label: Text(
+                                    lang == 'id'
+                                        ? 'Daftar Perusahaan Baru (SaaS Tenant)'
+                                        : 'Register New Company (SaaS)',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13.5,
+                                      color: Color(0xFF1D4ED8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // ── Card Login & Register Karyawan ───────────────────
                         Container(
                           padding: const EdgeInsets.all(28),
                           decoration: BoxDecoration(
