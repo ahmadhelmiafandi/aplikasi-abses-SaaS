@@ -47,6 +47,11 @@ class KalenderAcaraScreen extends ConsumerStatefulWidget {
 class _KalenderAcaraScreenState extends ConsumerState<KalenderAcaraScreen> {
   DateTime _selectedDate = DateTime.now();
 
+  bool _isToday(DateTime dt) {
+    final now = DateTime.now();
+    return dt.year == now.year && dt.month == now.month && dt.day == now.day;
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = ref.watch(langProvider);
@@ -55,6 +60,14 @@ class _KalenderAcaraScreenState extends ConsumerState<KalenderAcaraScreen> {
     final role = user?['role']?.toString() ?? 'karyawan';
     final isAdmin = role == 'admin' || role == 'hrd' || role == 'superadmin';
     final events = ref.watch(acaraListProvider);
+
+    final todayEvents = events.where((e) {
+      try {
+        return _isToday(DateTime.parse(e['waktu']));
+      } catch (_) {
+        return false;
+      }
+    }).toList();
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
@@ -74,6 +87,105 @@ class _KalenderAcaraScreenState extends ConsumerState<KalenderAcaraScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── Active Notification Alert Banner for Today's Agenda ──────────────
+            if (todayEvents.isNotEmpty) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFDC2626), Color(0xFFEF4444)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFDC2626).withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.notifications_active_rounded, color: Colors.white, size: 26),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  lang == 'id' ? 'PING! AGENDA HARI INI' : 'TODAY AGENDA ALERT',
+                                  style: const TextStyle(
+                                    color: Color(0xFFDC2626),
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${todayEvents.length} Agenda',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            todayEvents.first['judul'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on, size: 13, color: Colors.white.withOpacity(0.9)),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  todayEvents.first['lokasi'],
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // Calendar Month Header Card
             Container(
               padding: const EdgeInsets.all(16),
@@ -139,7 +251,7 @@ class _KalenderAcaraScreenState extends ConsumerState<KalenderAcaraScreen> {
             const SizedBox(height: 20),
 
             Text(
-              lang == 'id' ? 'Agenda & Rapat Mendatang' : 'Upcoming Meetings & Events',
+              lang == 'id' ? 'Agenda & Rapat Perusahaan' : 'Company Meetings & Events',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -158,23 +270,40 @@ class _KalenderAcaraScreenState extends ConsumerState<KalenderAcaraScreen> {
                     itemBuilder: (context, i) {
                       final item = events[i];
                       final dt = DateTime.parse(item['waktu']);
+                      final isCurrentToday = _isToday(dt);
                       final color = item['warna'] as Color? ?? AppColors.primary;
                       final timeStr = DateFormat('dd MMM yyyy — HH:mm', lang == 'id' ? 'id_ID' : 'en_US').format(dt);
 
                       return Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkSurface : AppColors.surface,
+                          color: isCurrentToday
+                              ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF))
+                              : (isDark ? AppColors.darkSurface : AppColors.surface),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
+                          border: Border.all(
+                            color: isCurrentToday
+                                ? AppColors.primary
+                                : (isDark ? AppColors.darkBorder : AppColors.border),
+                            width: isCurrentToday ? 2 : 1,
+                          ),
+                          boxShadow: isCurrentToday
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withOpacity(0.15),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                              : null,
                         ),
                         child: Row(
                           children: [
                             Container(
                               width: 4,
-                              height: 48,
+                              height: 52,
                               decoration: BoxDecoration(
-                                color: color,
+                                color: isCurrentToday ? AppColors.danger : color,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -185,6 +314,24 @@ class _KalenderAcaraScreenState extends ConsumerState<KalenderAcaraScreen> {
                                 children: [
                                   Row(
                                     children: [
+                                      if (isCurrentToday) ...[
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.danger,
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            lang == 'id' ? 'HARI INI' : 'TODAY',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                      ],
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
@@ -245,56 +392,78 @@ class _KalenderAcaraScreenState extends ConsumerState<KalenderAcaraScreen> {
   void _showAddEventDialog(BuildContext context, WidgetRef ref, String lang) {
     final judulCtrl = TextEditingController();
     final lokasiCtrl = TextEditingController();
+    bool setToday = true;
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(lang == 'id' ? 'Tambah Acara / Rapat Baru' : 'New Event / Meeting'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: judulCtrl,
-                decoration: InputDecoration(
-                  labelText: lang == 'id' ? 'Nama Acara / Rapat' : 'Event Name',
-                  border: const OutlineInputBorder(),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(lang == 'id' ? 'Tambah Acara / Rapat Baru' : 'New Event / Meeting'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: judulCtrl,
+                  decoration: InputDecoration(
+                    labelText: lang == 'id' ? 'Nama Acara / Rapat' : 'Event Name',
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: lokasiCtrl,
-                decoration: InputDecoration(
-                  labelText: lang == 'id' ? 'Lokasi / Tautan Meeting' : 'Location / Link',
-                  border: const OutlineInputBorder(),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: lokasiCtrl,
+                  decoration: InputDecoration(
+                    labelText: lang == 'id' ? 'Lokasi / Tautan Meeting' : 'Location / Link',
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    ChoiceChip(
+                      label: Text(lang == 'id' ? 'Hari Ini' : 'Today'),
+                      selected: setToday,
+                      onSelected: (val) => setModalState(() => setToday = true),
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: Text(lang == 'id' ? 'Besok' : 'Tomorrow'),
+                      selected: !setToday,
+                      onSelected: (val) => setModalState(() => setToday = false),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(Tr.get('cancel', lang)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (judulCtrl.text.trim().isEmpty) return;
+                final eventTime = setToday
+                    ? DateTime.now()
+                    : DateTime.now().add(const Duration(days: 1));
+                final newEvent = {
+                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                  'judul': judulCtrl.text.trim(),
+                  'kategori': 'Rapat Tenant',
+                  'waktu': eventTime.toIso8601String(),
+                  'lokasi': lokasiCtrl.text.trim().isEmpty ? 'Ruang Meeting' : lokasiCtrl.text.trim(),
+                  'warna': const Color(0xFF059669),
+                };
+                ref.read(acaraListProvider.notifier).update((state) => [newEvent, ...state]);
+                Navigator.pop(ctx);
+              },
+              child: Text(lang == 'id' ? 'Simpan' : 'Save'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(Tr.get('cancel', lang)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (judulCtrl.text.trim().isEmpty) return;
-              final newEvent = {
-                'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                'judul': judulCtrl.text.trim(),
-                'kategori': 'Rapat Tenant',
-                'waktu': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
-                'lokasi': lokasiCtrl.text.trim().isEmpty ? 'Ruang Meeting' : lokasiCtrl.text.trim(),
-                'warna': const Color(0xFF059669),
-              };
-              ref.read(acaraListProvider.notifier).update((state) => [newEvent, ...state]);
-              Navigator.pop(ctx);
-            },
-            child: Text(lang == 'id' ? 'Simpan' : 'Save'),
-          ),
-        ],
       ),
     );
   }

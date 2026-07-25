@@ -183,96 +183,148 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
+        builder: (context, setDialogState) => Dialog(
           backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            lang == 'id' ? 'Reset Password' : 'Reset Password',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: isDark ? AppColors.darkTextPrimary : const Color(0xFF141B41),
-            ),
-          ),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  lang == 'id'
-                      ? 'Masukkan email Anda untuk menerima tautan reset password.'
-                      : 'Enter your email to receive a password reset link.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 440),
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Icon Header
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.lock_reset_rounded,
+                      color: AppColors.primary,
+                      size: 28,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(color: isDark ? AppColors.darkTextPrimary : Colors.black),
-                  decoration: _inputDecor(
-                    Tr.get('email', lang),
-                    Icons.email_outlined,
-                    isDark,
+                  const SizedBox(height: 16),
+                  Text(
+                    lang == 'id' ? 'Reset Password' : 'Reset Password',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.darkTextPrimary : const Color(0xFF141B41),
+                    ),
                   ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return lang == 'id' ? 'Email wajib diisi' : 'Email is required';
-                    }
-                    if (!v.contains('@')) {
-                      return lang == 'id' ? 'Format email tidak valid' : 'Invalid email format';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: loading ? null : () => Navigator.pop(ctx),
-              child: Text(Tr.get('cancel', lang)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: loading
-                  ? null
-                  : () async {
-                      if (!formKey.currentState!.validate()) return;
-                      setDialogState(() => loading = true);
-                      final error = await ref
-                          .read(authProvider.notifier)
-                          .sendPasswordResetEmail(emailController.text.trim());
-                      setDialogState(() => loading = false);
-                      if (mounted) {
-                        Navigator.pop(ctx);
-                        if (error == null) {
-                          _showSnack(
-                            lang == 'id'
-                                ? 'Email reset password telah dikirim.'
-                                : 'Password reset email has been sent.',
-                          );
-                        } else {
-                          _showSnack(error, isError: true);
-                        }
+                  const SizedBox(height: 8),
+                  Text(
+                    lang == 'id'
+                        ? 'Masukkan email Anda untuk menerima tautan reset password.'
+                        : 'Enter your email to receive a password reset link.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(color: isDark ? AppColors.darkTextPrimary : Colors.black),
+                    decoration: _inputDecor(
+                      Tr.get('email', lang),
+                      Icons.email_outlined,
+                      isDark,
+                    ),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) {
+                        return lang == 'id' ? 'Email wajib diisi' : 'Email is required';
                       }
+                      if (!v.contains('@')) {
+                        return lang == 'id' ? 'Format email tidak valid' : 'Invalid email format';
+                      }
+                      return null;
                     },
-              child: loading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
-                  : Text(lang == 'id' ? 'Kirim' : 'Send'),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: loading ? null : () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.border),
+                          ),
+                          child: Text(
+                            Tr.get('cancel', lang),
+                            style: TextStyle(
+                              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: loading
+                              ? null
+                              : () async {
+                                  if (!formKey.currentState!.validate()) return;
+                                  setDialogState(() => loading = true);
+                                  final error = await ref
+                                      .read(authProvider.notifier)
+                                      .sendPasswordResetEmail(emailController.text.trim());
+                                  setDialogState(() => loading = false);
+                                  if (mounted) {
+                                    Navigator.pop(ctx);
+                                    if (error == null) {
+                                      _showSnack(
+                                        lang == 'id'
+                                            ? 'Email reset password telah dikirim.'
+                                            : 'Password reset email has been sent.',
+                                      );
+                                    } else {
+                                      _showSnack(error, isError: true);
+                                    }
+                                  }
+                                },
+                          child: loading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  lang == 'id' ? 'Kirim' : 'Send',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -984,11 +1036,9 @@ class _BiometricButton extends StatelessWidget {
 // ── Top Bar Button ────────────────────────────────────────────────────────────
 class _TopBarBtn extends StatelessWidget {
   final IconData icon;
-  final String? label;
   final VoidCallback onTap;
 
-  const _TopBarBtn(
-      {required this.icon, required this.onTap, this.label});
+  const _TopBarBtn({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1010,23 +1060,7 @@ class _TopBarBtn extends StatelessWidget {
                   ? Colors.white.withOpacity(0.25)
                   : AppColors.primary.withOpacity(0.3)),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: fgColor, size: 16),
-            if (label != null) ...[
-              const SizedBox(width: 4),
-              Text(
-                label!,
-                style: TextStyle(
-                  color: fgColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ],
-        ),
+        child: Icon(icon, color: fgColor, size: 16),
       ),
     );
   }

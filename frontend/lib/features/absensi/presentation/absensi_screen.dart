@@ -959,36 +959,21 @@ class _MenuTile extends StatelessWidget {
 // ── Header Action ─────────────────────────────────────────────────────────────
 class _HeaderAction extends StatelessWidget {
   final IconData icon;
-  final String? label;
   final VoidCallback onTap;
 
-  const _HeaderAction({required this.icon, required this.onTap, this.label});
+  const _HeaderAction({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(
-            horizontal: label != null ? 10 : 8, vertical: 6),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.12),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white, size: 16),
-            if (label != null) ...[
-              const SizedBox(width: 4),
-              Text(label!,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600)),
-            ],
-          ],
-        ),
+        child: Icon(icon, color: Colors.white, size: 16),
       ),
     );
   }

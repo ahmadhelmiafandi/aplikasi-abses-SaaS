@@ -2,27 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/l10n/translations.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../auth/presentation/auth_provider.dart';
 
-class PayrollScreen extends ConsumerStatefulWidget {
+class PayrollScreen extends ConsumerWidget {
   const PayrollScreen({super.key});
 
   @override
-  ConsumerState<PayrollScreen> createState() => _PayrollScreenState();
-}
-
-class _PayrollScreenState extends ConsumerState<PayrollScreen> {
-  String _selectedMonth = '2026-07';
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final lang = ref.watch(langProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(currentUserProvider);
     final namaKaryawan = user?['nama'] ?? 'Karyawan';
-    final role = user?['role'] ?? 'karyawan';
     final namaPerusahaan = user?['nama_perusahaan'] ?? 'PT SiAbsen SaaS Enterprise';
 
     final rupiahFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
@@ -33,10 +24,10 @@ class _PayrollScreenState extends ConsumerState<PayrollScreen> {
     const tunjanganTransport = 600000;
     const bpjsKesehatan = 150000;
     const bpjsKetenagakerjaan = 225000;
-    const PPh21 = 180000;
+    const pph21 = 180000;
 
     const totalPendapatan = gajiPokok + tunjanganMakan + tunjanganTransport;
-    const totalPotongan = bpjsKesehatan + bpjsKetenagakerjaan + PPh21;
+    const totalPotongan = bpjsKesehatan + bpjsKetenagakerjaan + pph21;
     const gajiNetto = totalPendapatan - totalPotongan;
 
     return Scaffold(
@@ -141,7 +132,7 @@ class _PayrollScreenState extends ConsumerState<PayrollScreen> {
               items: [
                 _buildLineItem('BPJS Kesehatan (1%)', rupiahFormat.format(bpjsKesehatan), isDark),
                 _buildLineItem('BPJS Ketenagakerjaan (2%)', rupiahFormat.format(bpjsKetenagakerjaan), isDark),
-                _buildLineItem('PPh 21', rupiahFormat.format(PPh21), isDark),
+                _buildLineItem('PPh 21', rupiahFormat.format(pph21), isDark),
               ],
               totalLabel: lang == 'id' ? 'Total Potongan' : 'Total Deductions',
               totalValue: rupiahFormat.format(totalPotongan),
