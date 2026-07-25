@@ -332,7 +332,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               isDark: isDark,
               onTap: () {
                 Navigator.pop(ctx);
-                _loginDemoUser('karyawan.demo.siabsen@gmail.com', '123456', 'Karyawan Demo', 'karyawan');
+                ref.read(authProvider.notifier).loginDemo('karyawan');
               },
             ),
             const SizedBox(height: 10),
@@ -346,7 +346,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               isDark: isDark,
               onTap: () {
                 Navigator.pop(ctx);
-                _loginDemoUser('admin.demo.siabsen@gmail.com', '123456', 'Admin HRD Demo', 'admin');
+                ref.read(authProvider.notifier).loginDemo('admin');
               },
             ),
           ],
@@ -362,42 +362,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _loginDemoUser(
-      String email, String pass, String nama, String role) async {
-    _emailCtrl.text = email;
-    await ref.read(authProvider.notifier).login(email, pass);
-    if (ref.read(authProvider).status == AuthStatus.authenticated) return;
-
-    try {
-      final res = await SupabaseConfig.auth.signUp(
-        email: email,
-        password: pass,
-        data: {
-          'nama': nama,
-          'role': role,
-          'status_aktif': true,
-        },
-      );
-      final user = res.user;
-      if (user != null) {
-        try {
-          await SupabaseConfig.client.from('profiles').upsert({
-            'id': user.id,
-            'email': email,
-            'nama': nama,
-            'role': role,
-            'status_aktif': true,
-          });
-        } catch (_) {}
-      }
-      await ref.read(authProvider.notifier).login(email, pass);
-    } catch (e) {
-      if (mounted) {
-        _showSnack('Gagal masuk ke akun demo: $e', isError: true);
-      }
-    }
   }
 
   @override
