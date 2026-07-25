@@ -21,6 +21,9 @@ dist/
 *.sln
 *.sw?
 
+# Backend logs
+backend/logs/
+
 # Flutter specific ignore files
 .dart_tool/
 .flutter-plugins
