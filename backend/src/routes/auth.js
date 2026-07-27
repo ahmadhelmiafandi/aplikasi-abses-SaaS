@@ -7,8 +7,9 @@ const router  = express.Router();
 const authController = require('../controllers/authController');
 const { karyawanLimitGuard } = require('../middleware/planGuard');
 
-router.post('/login',    authController.login);
-router.post('/register', karyawanLimitGuard, authController.register);
-router.post('/refresh',  authController.refresh);
+router.post('/login',           authController.login);
+router.post('/register',        karyawanLimitGuard, authController.register);
+router.post('/register-tenant', authController.registerTenant);
+router.post('/refresh',         authController.refresh);
 
 module.exports = router;

@@ -61,65 +61,78 @@ class _RegisterTenantScreenState extends ConsumerState<RegisterTenantScreen> {
     final generatedCompanyToken = 'TC-$prefix$randomDigits';
 
     try {
-      String? newTenantId;
+      bool isSuccess = false;
+      String? errorMessage;
 
-      // Tier 1: Buat record Tenant via Supabase Direct
+      // 1. Panggil Endpoint Backend Express (Auto email_confirm via Service Role)
       try {
-        final tenantRes = await SupabaseConfig.client
-            .from('tenant')
-            .insert({
-              'name': compName,
-              'subdomain': subdomain,
-            })
-            .select('id')
-            .single();
-        newTenantId = tenantRes['id']?.toString();
-      } catch (_) {
-        // Tier 2: Fallback ke Express Backend (Service Role bypass RLS)
+        final res = await DioClient().dio.post('/auth/register-tenant', data: {
+          'name': compName,
+          'subdomain': subdomain,
+          'adminNama': adminNama,
+          'adminEmail': adminEmail,
+          'adminPass': adminPass,
+          'adminHp': adminHp,
+        });
+
+        if (res.data != null && res.data['success'] == true) {
+          isSuccess = true;
+        } else {
+          errorMessage = res.data?['message']?.toString();
+        }
+      } catch (dioErr) {
+        // Direct Supabase Fallback jika backend Express offline
         try {
-          final dioRes = await DioClient().dio.post('/superadmin/tenants', data: {
-            'name': compName,
-            'subdomain': subdomain,
-          });
-          if (dioRes.data != null && dioRes.data['data'] != null) {
-            final tData = dioRes.data['data'];
-            newTenantId = (tData['tenant']?['id'] ?? tData['id'])?.toString();
-          }
-        } catch (_) {}
-
-        // Tier 3: Fallback ID Tenant berbasis subdomain
-        newTenantId ??= 'tenant-$subdomain';
-      }
-
-      // 2. Buat akun Admin Perusahaan via Supabase Auth
-      try {
-        final authRes = await SupabaseConfig.auth.signUp(
-          email: adminEmail,
-          password: adminPass,
-          data: {
-            'nama': adminNama,
-            'nomor_hp': adminHp.isEmpty ? null : adminHp,
-            'role': 'admin',
-            'status_aktif': true, // Auto aktif sebagai pemilik perusahaan
-            'id_tenant': newTenantId,
-          },
-        );
-
-        final user = authRes.user;
-        if (user != null) {
+          String? newTenantId;
           try {
-            await SupabaseConfig.client.from('profiles').upsert({
-              'id': user.id,
-              'email': adminEmail,
+            final tenantRes = await SupabaseConfig.client
+                .from('tenant')
+                .insert({
+                  'name': compName,
+                  'subdomain': subdomain,
+                })
+                .select('id')
+                .single();
+            newTenantId = tenantRes['id']?.toString();
+          } catch (_) {
+            newTenantId = 'tenant-$subdomain';
+          }
+
+          final authRes = await SupabaseConfig.auth.signUp(
+            email: adminEmail,
+            password: adminPass,
+            data: {
               'nama': adminNama,
+              'nomor_hp': adminHp.isEmpty ? null : adminHp,
               'role': 'admin',
               'status_aktif': true,
-              'nomor_hp': adminHp.isEmpty ? null : adminHp,
               'id_tenant': newTenantId,
-            });
-          } catch (_) {}
+            },
+          );
+
+          final user = authRes.user;
+          if (user != null) {
+            try {
+              await SupabaseConfig.client.from('profiles').upsert({
+                'id': user.id,
+                'email': adminEmail,
+                'nama': adminNama,
+                'role': 'admin',
+                'status_aktif': true,
+                'nomor_hp': adminHp.isEmpty ? null : adminHp,
+                'id_tenant': newTenantId,
+              });
+            } catch (_) {}
+          }
+          isSuccess = true;
+        } catch (e) {
+          errorMessage = e.toString().replaceAll("PostgrestException", "").replaceAll("AuthException", "");
         }
-      } catch (_) {}
+      }
+
+      if (!isSuccess && errorMessage != null) {
+        throw Exception(errorMessage);
+      }
 
       if (!mounted) return;
       setState(() => _isLoading = false);
