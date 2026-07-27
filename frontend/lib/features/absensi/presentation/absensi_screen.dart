@@ -526,13 +526,7 @@ class _AbsensiScreenState extends ConsumerState<AbsensiScreen> {
         color: const Color(0xFF0891B2),
         route: '/izin',
       ),
-      // Scan QR — semua role
-      _MenuItem(
-        title: Tr.get('scan_qr', lang),
-        icon: Icons.qr_code_scanner,
-        color: const Color(0xFF7C3AED),
-        route: '/absensi/scan-qr',
-      ),
+
       // Pengumuman — semua role
       _MenuItem(
         title: Tr.get('pengumuman', lang),

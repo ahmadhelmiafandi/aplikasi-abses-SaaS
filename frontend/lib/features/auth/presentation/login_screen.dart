@@ -378,8 +378,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               iconColor: const Color(0xFF22C55E),
               title: lang == 'id' ? 'Demo Karyawan' : 'Employee Demo',
               subtitle: lang == 'id'
-                  ? 'Check-In GPS, Scan QR Code & Pengajuan Izin'
-                  : 'GPS Check-In, QR Scan & Leave Requests',
+                  ? 'Check-In GPS, Presensi & Pengajuan Izin'
+                  : 'GPS Check-In, Attendance & Leave Requests',
               isDark: isDark,
               onTap: () {
                 Navigator.pop(ctx);
