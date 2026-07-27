@@ -572,13 +572,15 @@ class _AbsensiScreenState extends ConsumerState<AbsensiScreen> {
         route: '/approval/izin',
       ));
     }
-    if (role == 'admin') {
+    if (role == 'superadmin') {
       items.add(_MenuItem(
         title: Tr.get('superadmin_dashboard', lang),
         icon: Icons.admin_panel_settings,
         color: Colors.purple,
         route: '/superadmin/dashboard',
       ));
+    }
+    if (role == 'admin') {
       items.add(_MenuItem(
         title: Tr.get('approval_account', lang),
         icon: Icons.person_add_outlined,
@@ -641,7 +643,7 @@ class _ClockCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.primaryDark,
+              color: isDark ? const Color(0xFF2563EB) : AppColors.primaryDark,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -663,7 +665,10 @@ class _ClockCard extends StatelessWidget {
                       DateFormat('EEEE, d MMMM yyyy',
                               lang == 'id' ? 'id_ID' : 'en_US')
                           .format(DateTime.now()),
-                      style: const TextStyle(fontSize: 13),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -675,13 +680,13 @@ class _ClockCard extends StatelessWidget {
                       child: Text(
                         currentTime,
                         maxLines: 1,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.primaryDark,
+                          color: isDark ? const Color(0xFF60A5FA) : AppColors.primaryDark,
                           letterSpacing: 1,
                           // Tabular figures: semua digit lebar sama → tidak naik turun
-                          fontFeatures: [FontFeature.tabularFigures()],
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ),
@@ -695,15 +700,21 @@ class _ClockCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.warningLight,
+                          color: isDark
+                              ? const Color(0xFF451A03)
+                              : AppColors.warningLight,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: AppColors.warning.withOpacity(0.4)),
+                              color: isDark
+                                  ? const Color(0xFFB45309)
+                                  : AppColors.warning.withOpacity(0.4)),
                         ),
                         child: Text(
                           Tr.get('belum_absen', lang),
-                          style: const TextStyle(
-                              color: AppColors.warning,
+                          style: TextStyle(
+                              color: isDark
+                                  ? const Color(0xFFFBBF24)
+                                  : AppColors.warning,
                               fontSize: 12,
                               fontWeight: FontWeight.w600),
                         ),
@@ -868,34 +879,39 @@ class _BigActionBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: enabled ? 1.0 : 0.45,
-      child: Material(
-        color: color,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final btnColor = enabled
+        ? color
+        : (isDark ? AppColors.darkSurfaceAlt : color.withOpacity(0.4));
+    final iconTextColor = enabled
+        ? Colors.white
+        : (isDark ? AppColors.darkTextSecondary : Colors.white.withOpacity(0.7));
+
+    return Material(
+      color: btnColor,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
         borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: enabled ? onTap : null,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            child: Column(
-              children: [
-                isLoading
-                    ? const SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2.5),
-                      )
-                    : Icon(icon, color: Colors.white, size: 28),
-                const SizedBox(height: 6),
-                Text(label,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700)),
-              ],
-            ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          child: Column(
+            children: [
+              isLoading
+                  ? const SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2.5),
+                    )
+                  : Icon(icon, color: iconTextColor, size: 28),
+              const SizedBox(height: 6),
+              Text(label,
+                  style: TextStyle(
+                      color: iconTextColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700)),
+            ],
           ),
         ),
       ),

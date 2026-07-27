@@ -10,7 +10,13 @@ import '../../../core/services/biometric_service.dart';
 import '../../auth/presentation/auth_provider.dart';
 
 final profileProvider = FutureProvider.autoDispose((ref) async {
-  return await SupabaseService.getProfile();
+  try {
+    return await SupabaseService.getProfile();
+  } catch (e) {
+    final user = ref.read(authProvider).user;
+    if (user != null) return user;
+    rethrow;
+  }
 });
 
 class ProfileScreen extends ConsumerStatefulWidget {

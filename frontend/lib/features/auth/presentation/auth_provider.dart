@@ -186,11 +186,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       String? tenantId;
       if (tenantCode != null && tenantCode.trim().isNotEmpty) {
         final codeClean = tenantCode.trim();
-        // Lookup tenant via Token Kode Perusahaan (company_code) atau Subdomain
+        // Lookup tenant via Subdomain atau ID Tenant
         final tenantRes = await SupabaseConfig.client
-            .from('tenants')
+            .from('tenant')
             .select('id')
-            .or('company_code.ilike.$codeClean,subdomain.ilike.${codeClean.toLowerCase()}')
+            .eq('subdomain', codeClean.toLowerCase())
             .maybeSingle();
 
         if (tenantRes == null) {

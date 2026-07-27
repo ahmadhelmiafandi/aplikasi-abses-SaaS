@@ -13,7 +13,7 @@ class SuperAdminService {
   static Future<List<dynamic>> fetchTenants() async {
     try {
       final res = await SupabaseConfig.client
-          .from('tenants')
+          .from('tenant')
           .select('*, subscription_plans(*), tenant_settings(*)');
       return List<dynamic>.from(res);
     } catch (e) {
@@ -31,12 +31,12 @@ class SuperAdminService {
         'id_plan': payload['id_plan'],
         'subscription_status': payload['status'] ?? 'active',
       };
-      final res = await SupabaseConfig.client.from('tenants').insert(tenantData).select().single();
+      final res = await SupabaseConfig.client.from('tenant').insert(tenantData).select().single();
       
       // Save settings if provided
       if (res['id'] != null) {
         await SupabaseConfig.client.from('tenant_settings').upsert({
-          'tenant_id': res['id'],
+          'id_tenant': res['id'],
           'office_lat': payload['office_lat'] ?? -6.9826,
           'office_lng': payload['office_lng'] ?? 110.4092,
           'geofence_radius_meter': payload['geofence_radius_meter'] ?? 100,
@@ -55,10 +55,10 @@ class SuperAdminService {
         'id_plan': payload['id_plan'],
         'subscription_status': payload['status'],
       };
-      await SupabaseConfig.client.from('tenants').update(tenantData).eq('id', id);
+      await SupabaseConfig.client.from('tenant').update(tenantData).eq('id', id);
       
       await SupabaseConfig.client.from('tenant_settings').upsert({
-        'tenant_id': id,
+        'id_tenant': id,
         'office_lat': payload['office_lat'],
         'office_lng': payload['office_lng'],
         'geofence_radius_meter': payload['geofence_radius_meter'],
@@ -71,7 +71,7 @@ class SuperAdminService {
 
   static Future<void> deleteTenant(String id) async {
     try {
-      await SupabaseConfig.client.from('tenants').delete().eq('id', id);
+      await SupabaseConfig.client.from('tenant').delete().eq('id', id);
     } catch (e) {
       debugPrint('[SuperAdminService] Supabase deleteTenant failed: $e. Fallback to Dio...');
       await DioClient().dio.delete('/superadmin/tenants/$id', options: _superOpt);

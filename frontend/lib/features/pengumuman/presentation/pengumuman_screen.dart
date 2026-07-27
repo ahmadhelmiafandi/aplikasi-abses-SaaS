@@ -202,25 +202,48 @@ class PengumumanScreen extends ConsumerWidget {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(Tr.get('cancel', lang)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (judulCtrl.text.trim().isEmpty || isiCtrl.text.trim().isEmpty) return;
-                final newItem = {
-                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                  'judul': judulCtrl.text.trim(),
-                  'isi': isiCtrl.text.trim(),
-                  'tanggal': DateTime.now().toIso8601String(),
-                  'penulis': 'HRD / Admin',
-                  'penting': penting,
-                };
-                ref.read(pengumumanListProvider.notifier).update((state) => [newItem, ...state]);
-                Navigator.pop(ctx);
-              },
-              child: Text(lang == 'id' ? 'Kirim' : 'Publish'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      Tr.get('cancel', lang),
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (judulCtrl.text.trim().isEmpty || isiCtrl.text.trim().isEmpty) return;
+                      final newItem = {
+                        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                        'judul': judulCtrl.text.trim(),
+                        'isi': isiCtrl.text.trim(),
+                        'tanggal': DateTime.now().toIso8601String(),
+                        'penulis': 'HRD / Admin',
+                        'penting': penting,
+                      };
+                      ref.read(pengumumanListProvider.notifier).update((state) => [newItem, ...state]);
+                      Navigator.pop(ctx);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      lang == 'id' ? 'Kirim' : 'Publish',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

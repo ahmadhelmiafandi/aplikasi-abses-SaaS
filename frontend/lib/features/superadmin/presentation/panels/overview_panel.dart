@@ -45,7 +45,7 @@ class _OverviewPanelState extends ConsumerState<OverviewPanel> {
       // Coba lewat Supabase Direct terlebih dahulu (Serverless Web Friendly)
       try {
         final tenants = await SupabaseConfig.client
-            .from('tenants')
+            .from('tenant')
             .select('*, subscription_plans(name)');
         _totalTenants = tenants.length;
 
