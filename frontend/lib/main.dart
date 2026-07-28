@@ -12,7 +12,6 @@ import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/register_screen.dart';
 import 'features/auth/presentation/register_tenant_screen.dart';
 import 'features/absensi/presentation/absensi_screen.dart';
-import 'features/absensi/presentation/qr_scan_screen.dart';
 import 'features/absensi/presentation/riwayat_absensi_screen.dart';
 import 'features/izin/presentation/daftar_izin_screen.dart';
 import 'features/izin/presentation/form_izin_screen.dart';
@@ -96,7 +95,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/pending-approval', builder: (c, s) => const PendingApprovalScreen()),
 
       // ── Absensi ────────────────────────────────────────────────────────
-      GoRoute(path: '/absensi/scan-qr',  builder: (c, s) => const QrScanScreen()),
       GoRoute(path: '/absensi/riwayat',  builder: (c, s) => const RiwayatAbsensiScreen()),
 
       // ── Izin ───────────────────────────────────────────────────────────
